@@ -16,12 +16,20 @@ export const createApp = () => {
   const corsOptions = {
     origin: (
       origin: string | undefined,
-      callback: (err: Error | null, allow?: boolean | string) => void
+      callback: (err: Error | null, allow?: boolean) => void
     ) => {
-      if (!origin || allowedOrigins.includes(origin)) {
+      if (!origin) return callback(null, true);
+
+      const normalizedOrigin = origin.trim().replace(/\/$/, ""); // إزالة أي / في النهاية
+      const allowed = allowedOrigins.some(
+        (allowedOrigin) => normalizedOrigin === allowedOrigin.replace(/\/$/, "")
+      );
+
+      if (allowed) {
         callback(null, true);
       } else {
-        callback(new Error(`Origin ${origin} not allowed by CORS`));
+        console.warn(`CORS blocked request from origin: ${origin}`);
+        callback(new Error("Not allowed by CORS"));
       }
     },
     credentials: true,
