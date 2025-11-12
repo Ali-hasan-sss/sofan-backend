@@ -11,49 +11,8 @@ export const createApp = () => {
 
   app.set("trust proxy", 1);
 
-  const normalizeOrigin = (input?: string | null) => {
-    if (!input) return undefined;
-    const trimmed = input.trim();
-    if (!trimmed) return undefined;
-    const withProtocol = /^https?:\/\//i.test(trimmed)
-      ? trimmed
-      : `https://${trimmed}`;
-    try {
-      const url = new URL(withProtocol);
-      return `${url.protocol}//${url.host}`.toLowerCase();
-    } catch {
-      return undefined;
-    }
-  };
-
-  const defaultAllowedOrigins = [
-    "https://sofan.vercel.app",
-    "http://localhost:3000",
-  ].map((origin) => normalizeOrigin(origin));
-
-  const allowedOriginSet = new Set(
-    [
-      ...defaultAllowedOrigins,
-      ...env.CORS_ALLOWED_ORIGINS.map((origin) => normalizeOrigin(origin)),
-    ].filter((origin): origin is string => Boolean(origin))
-  );
-
   const corsOptions = {
-    origin: (
-      origin: string | undefined,
-      callback: (err: Error | null, allow?: boolean) => void
-    ) => {
-      if (!origin) {
-        return callback(null, true);
-      }
-
-      const normalizedOrigin = normalizeOrigin(origin);
-      if (normalizedOrigin && allowedOriginSet.has(normalizedOrigin)) {
-        return callback(null, true);
-      }
-
-      return callback(new Error(`Origin ${origin} not allowed by CORS`));
-    },
+    origin: true,
     credentials: true,
     optionsSuccessStatus: 204,
   } as const;
