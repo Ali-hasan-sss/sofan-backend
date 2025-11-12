@@ -22,6 +22,14 @@ export const createApp = () => {
   app.use(express.urlencoded({ extended: true }));
   app.use(cookieParser());
 
+  app.options(
+    "*",
+    cors({
+      origin: ["https://sofan.vercel.app", "http://localhost:3000"],
+      credentials: true,
+    })
+  );
+
   app.get("/health", (_req, res) => {
     res.json({ status: "ok", timestamp: new Date().toISOString() });
   });
