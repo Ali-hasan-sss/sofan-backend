@@ -38,24 +38,27 @@ export const createApp = () => {
     ].filter((origin): origin is string => Boolean(origin))
   );
 
-  app.use(
-    cors({
-      origin: (origin, callback) => {
-        if (!origin) {
-          return callback(null, true);
-        }
+  const corsOptions = {
+    origin: (
+      origin: string | undefined,
+      callback: (err: Error | null, allow?: boolean) => void
+    ) => {
+      if (!origin) {
+        return callback(null, true);
+      }
 
-        const normalizedOrigin = normalizeOrigin(origin);
-        if (normalizedOrigin && allowedOriginSet.has(normalizedOrigin)) {
-          return callback(null, normalizedOrigin);
-        }
+      const normalizedOrigin = normalizeOrigin(origin);
+      if (normalizedOrigin && allowedOriginSet.has(normalizedOrigin)) {
+        return callback(null, true);
+      }
 
-        return callback(new Error(`Origin ${origin} not allowed by CORS`));
-      },
-      credentials: true,
-      optionsSuccessStatus: 204,
-    })
-  );
+      return callback(new Error(`Origin ${origin} not allowed by CORS`));
+    },
+    credentials: true,
+    optionsSuccessStatus: 204,
+  } as const;
+
+  app.use(cors(corsOptions));
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
   app.use(cookieParser());
