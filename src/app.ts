@@ -11,8 +11,28 @@ export const createApp = () => {
 
   app.set("trust proxy", 1);
 
+  const formatOrigin = (origin?: string | null) => {
+    if (!origin) return undefined;
+    const trimmed = origin.trim();
+    if (!trimmed) return undefined;
+    if (/^https?:\/\//i.test(trimmed)) return trimmed;
+    return `https://${trimmed}`;
+  };
+
   const corsOptions = {
-    origin: true,
+    origin: (
+      origin: string | undefined,
+      callback: (err: Error | null, allow?: boolean | string) => void
+    ) => {
+      if (!origin) {
+        return callback(null, true);
+      }
+      const formatted = formatOrigin(origin);
+      if (formatted) {
+        return callback(null, formatted);
+      }
+      return callback(new Error(`Origin ${origin} not allowed by CORS`));
+    },
     credentials: true,
     optionsSuccessStatus: 204,
   } as const;
