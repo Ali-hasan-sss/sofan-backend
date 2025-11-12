@@ -26,10 +26,17 @@ export const createApp = () => {
     }
   };
 
-  const allowedOrigins = env.CORS_ALLOWED_ORIGINS.map((origin) =>
-    normalizeOrigin(origin)
-  ).filter((origin): origin is string => Boolean(origin));
-  const allowedOriginSet = new Set(allowedOrigins);
+  const defaultAllowedOrigins = [
+    "https://sofan.vercel.app",
+    "http://localhost:3000",
+  ].map((origin) => normalizeOrigin(origin));
+
+  const allowedOriginSet = new Set(
+    [
+      ...defaultAllowedOrigins,
+      ...env.CORS_ALLOWED_ORIGINS.map((origin) => normalizeOrigin(origin)),
+    ].filter((origin): origin is string => Boolean(origin))
+  );
 
   app.use(
     cors({
