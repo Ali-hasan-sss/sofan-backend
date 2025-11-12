@@ -11,9 +11,25 @@ export const createApp = () => {
 
   app.set("trust proxy", 1);
 
-  const normalizeOrigin = (input: string) =>
-    input.replace(/\/+$/, "").toLowerCase();
-  const allowedOrigins = env.CORS_ALLOWED_ORIGINS.map(normalizeOrigin);
+  const normalizeOrigin = (input?: string | null) => {
+    if (!input) return undefined;
+    const trimmed = input.trim();
+    if (!trimmed) return undefined;
+    const withProtocol = /^https?:\/\//i.test(trimmed)
+      ? trimmed
+      : `https://${trimmed}`;
+    try {
+      const url = new URL(withProtocol);
+      return `${url.protocol}//${url.host}`.toLowerCase();
+    } catch {
+      return undefined;
+    }
+  };
+
+  const allowedOrigins = env.CORS_ALLOWED_ORIGINS.map((origin) =>
+    normalizeOrigin(origin)
+  ).filter((origin): origin is string => Boolean(origin));
+  const allowedOriginSet = new Set(allowedOrigins);
 
   app.use(
     cors({
@@ -23,8 +39,8 @@ export const createApp = () => {
         }
 
         const normalizedOrigin = normalizeOrigin(origin);
-        if (allowedOrigins.includes(normalizedOrigin)) {
-          return callback(null, true);
+        if (normalizedOrigin && allowedOriginSet.has(normalizedOrigin)) {
+          return callback(null, normalizedOrigin);
         }
 
         return callback(new Error(`Origin ${origin} not allowed by CORS`));

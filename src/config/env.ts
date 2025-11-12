@@ -10,7 +10,12 @@ const normalizeOrigin = (origin: string) => {
   const withProtocol = /^https?:\/\//i.test(trimmed)
     ? trimmed
     : `https://${trimmed}`;
-  return withProtocol.replace(/\/+$/, "");
+  try {
+    const url = new URL(withProtocol);
+    return `${url.protocol}//${url.host}`;
+  } catch {
+    return undefined;
+  }
 };
 
 const EnvSchema = z.object({
