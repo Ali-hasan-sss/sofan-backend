@@ -13,8 +13,19 @@ export const createApp = () => {
 
   app.use(
     cors({
-      origin: env.BASE_URL,
+      origin: (origin, callback) => {
+        if (!origin) {
+          return callback(null, true);
+        }
+
+        if (env.CORS_ALLOWED_ORIGINS.includes(origin)) {
+          return callback(null, true);
+        }
+
+        return callback(new Error(`Origin ${origin} not allowed by CORS`));
+      },
       credentials: true,
+      optionsSuccessStatus: 204,
     })
   );
   app.use(express.json());

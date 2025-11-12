@@ -17,6 +17,15 @@ const EnvSchema = z.object({
   BASE_URL: z.string().default("http://localhost:4000"),
   DEFAULT_ADMIN_EMAIL: z.string().email().default("admin@sofan.com"),
   DEFAULT_ADMIN_PASSWORD: z.string().min(8).default("ChangeMe!123"),
+  CORS_ALLOWED_ORIGINS: z
+    .string()
+    .default("http://localhost:3000,http://localhost:4000")
+    .transform((value) =>
+      value
+        .split(",")
+        .map((origin) => origin.trim())
+        .filter(Boolean)
+    ),
 });
 
 export type Env = z.infer<typeof EnvSchema>;
