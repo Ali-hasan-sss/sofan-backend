@@ -1,0 +1,1 @@
+{"version":3,"file":"ShipmentCounter.d.ts","sourceRoot":"","sources":["../../src/models/ShipmentCounter.ts"],"names":[],"mappings":"AAAA,OAAO,EAAiB,QAAQ,EAAE,MAAM,UAAU,CAAC;AAEnD,MAAM,WAAW,uBAAwB,SAAQ,QAAQ;IACvD,OAAO,EAAE,MAAM,CAAC;IAChB,GAAG,EAAE,MAAM,CAAC;IACZ,SAAS,EAAE,IAAI,CAAC;CACjB;AAUD,eAAO,MAAM,oBAAoB;;;;OAGhC,CAAC"}

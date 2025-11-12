@@ -1,0 +1,1 @@
+{"version":3,"file":"invoiceController.d.ts","sourceRoot":"","sources":["../../src/controllers/invoiceController.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,OAAO,EAAE,QAAQ,EAAE,MAAM,SAAS,CAAC;AAG5C,eAAO,MAAM,iBAAiB;gBACV,OAAO,OAAO,QAAQ;mBASnB,OAAO,OAAO,QAAQ;kBAKvB,OAAO,OAAO,QAAQ;CAI3C,CAAC"}

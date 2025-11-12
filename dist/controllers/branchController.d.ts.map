@@ -1,0 +1,1 @@
+{"version":3,"file":"branchController.d.ts","sourceRoot":"","sources":["../../src/controllers/branchController.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,OAAO,EAAE,QAAQ,EAAE,MAAM,SAAS,CAAC;AAG5C,eAAO,MAAM,gBAAgB;gBACT,OAAO,OAAO,QAAQ;kBAQpB,OAAO,OAAO,QAAQ;kBAKtB,OAAO,OAAO,QAAQ;kBAKtB,OAAO,OAAO,QAAQ;CAI3C,CAAC"}
