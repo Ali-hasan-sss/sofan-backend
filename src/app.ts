@@ -1,6 +1,5 @@
 import express from "express";
 import cookieParser from "cookie-parser";
-import cors from "cors";
 import { logger } from "./utils/logger";
 import apiRouter from "./routes";
 import { errorHandler } from "./middlewares/errorHandler";
@@ -8,11 +7,22 @@ import { errorHandler } from "./middlewares/errorHandler";
 export const createApp = () => {
   const app = express();
 
-  app.use(
-    cors({
-      origin: "*",
-    })
-  );
+  // إضافة ترويسة CORS يدويًا لجميع الطلبات
+  app.use((req, res, next) => {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header(
+      "Access-Control-Allow-Headers",
+      "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+    );
+    res.header(
+      "Access-Control-Allow-Methods",
+      "GET, POST, PUT, PATCH, DELETE, OPTIONS"
+    );
+    if (req.method === "OPTIONS") {
+      return res.sendStatus(204);
+    }
+    next();
+  });
 
   app.set("trust proxy", 1);
   app.use(express.json());
