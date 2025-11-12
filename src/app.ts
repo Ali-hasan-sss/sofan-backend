@@ -7,9 +7,15 @@ import { errorHandler } from "./middlewares/errorHandler";
 export const createApp = () => {
   const app = express();
 
-  // إضافة ترويسة CORS يدويًا لجميع الطلبات
   app.use((req, res, next) => {
-    res.header("Access-Control-Allow-Origin", "*");
+    const requestOrigin = req.headers.origin;
+    if (requestOrigin) {
+      res.header("Access-Control-Allow-Origin", requestOrigin);
+      res.header("Vary", "Origin");
+      res.header("Access-Control-Allow-Credentials", "true");
+    } else {
+      res.header("Access-Control-Allow-Origin", "*");
+    }
     res.header(
       "Access-Control-Allow-Headers",
       "Origin, X-Requested-With, Content-Type, Accept, Authorization"
