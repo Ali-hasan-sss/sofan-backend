@@ -11,6 +11,10 @@ export const createApp = () => {
 
   app.set("trust proxy", 1);
 
+  const normalizeOrigin = (input: string) =>
+    input.replace(/\/+$/, "").toLowerCase();
+  const allowedOrigins = env.CORS_ALLOWED_ORIGINS.map(normalizeOrigin);
+
   app.use(
     cors({
       origin: (origin, callback) => {
@@ -18,7 +22,8 @@ export const createApp = () => {
           return callback(null, true);
         }
 
-        if (env.CORS_ALLOWED_ORIGINS.includes(origin)) {
+        const normalizedOrigin = normalizeOrigin(origin);
+        if (allowedOrigins.includes(normalizedOrigin)) {
           return callback(null, true);
         }
 

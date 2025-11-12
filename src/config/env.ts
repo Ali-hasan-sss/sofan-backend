@@ -3,6 +3,16 @@ import { z } from "zod";
 
 config();
 
+const normalizeOrigin = (origin: string) => {
+  if (!origin) return undefined;
+  const trimmed = origin.trim();
+  if (!trimmed) return undefined;
+  const withProtocol = /^https?:\/\//i.test(trimmed)
+    ? trimmed
+    : `https://${trimmed}`;
+  return withProtocol.replace(/\/+$/, "");
+};
+
 const EnvSchema = z.object({
   NODE_ENV: z
     .enum(["development", "test", "production"])
@@ -23,8 +33,8 @@ const EnvSchema = z.object({
     .transform((value) =>
       value
         .split(",")
-        .map((origin) => origin.trim())
-        .filter(Boolean)
+        .map((origin) => normalizeOrigin(origin))
+        .filter((origin): origin is string => Boolean(origin))
     ),
 });
 
