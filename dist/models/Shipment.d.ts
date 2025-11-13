@@ -26,11 +26,17 @@ export interface ShipmentDocument extends Document {
         name: string;
         phone: string;
         address: string;
+        province?: Types.ObjectId;
+        district?: Types.ObjectId;
+        village?: Types.ObjectId;
     };
     recipient: {
         name: string;
         phone: string;
         address: string;
+        province?: Types.ObjectId;
+        district?: Types.ObjectId;
+        village?: Types.ObjectId;
     };
     packages: PackageDetails[];
     pricing: PricingBreakdown;

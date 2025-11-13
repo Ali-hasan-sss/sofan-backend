@@ -36,11 +36,17 @@ export interface ShipmentDocument extends Document {
     name: string;
     phone: string;
     address: string;
+    province?: Types.ObjectId;
+    district?: Types.ObjectId;
+    village?: Types.ObjectId;
   };
   recipient: {
     name: string;
     phone: string;
     address: string;
+    province?: Types.ObjectId;
+    district?: Types.ObjectId;
+    village?: Types.ObjectId;
   };
   packages: PackageDetails[];
   pricing: PricingBreakdown;
@@ -58,6 +64,9 @@ const AddressSchema = new Schema(
     name: { type: String, required: true },
     phone: { type: String, required: true },
     address: { type: String, required: true },
+    province: { type: Schema.Types.ObjectId, ref: "Province" },
+    district: { type: Schema.Types.ObjectId, ref: "District" },
+    village: { type: Schema.Types.ObjectId, ref: "Village" },
   },
   { _id: false }
 );

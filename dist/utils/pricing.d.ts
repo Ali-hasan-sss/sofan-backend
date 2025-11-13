@@ -1,9 +1,13 @@
-import { PricingRuleDocument } from "../models/PricingRule";
-import { Dimensions } from "../types";
-export interface PricingInput {
-    packages: Dimensions[];
-    codAmount?: number;
-    insured?: boolean;
+import { VolumeRateDocument } from "../models/VolumeRate";
+import { ShipmentType } from "../types";
+export interface VolumePricingInput {
+    packages: Array<{
+        length: number;
+        width: number;
+        height: number;
+    }>;
+    shipmentType: ShipmentType;
+    currency?: string;
 }
 export interface PricingResult {
     baseRate: number;
@@ -14,7 +18,8 @@ export interface PricingResult {
     codFee: number;
     insuranceFee: number;
     currency: string;
+    localCurrency: string;
     total: number;
 }
-export declare const calculatePricing: (rule: PricingRuleDocument, input: PricingInput) => PricingResult;
+export declare const calculatePricing: (rate: VolumeRateDocument, input: VolumePricingInput) => PricingResult;
 //# sourceMappingURL=pricing.d.ts.map

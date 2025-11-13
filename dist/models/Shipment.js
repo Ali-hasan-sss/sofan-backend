@@ -6,6 +6,9 @@ const AddressSchema = new mongoose_1.Schema({
     name: { type: String, required: true },
     phone: { type: String, required: true },
     address: { type: String, required: true },
+    province: { type: mongoose_1.Schema.Types.ObjectId, ref: "Province" },
+    district: { type: mongoose_1.Schema.Types.ObjectId, ref: "District" },
+    village: { type: mongoose_1.Schema.Types.ObjectId, ref: "Village" },
 }, { _id: false });
 const PackageSchema = new mongoose_1.Schema({
     length: { type: Number, required: true },

@@ -7,6 +7,8 @@ import pricingRouter from "./pricing";
 import walletRouter from "./wallet";
 import invoiceRouter from "./invoices";
 import adminRouter from "./admin";
+import locationsRouter from "./locations";
+import staffRouter from "./staff";
 
 const router = Router();
 
@@ -18,5 +20,7 @@ router.use("/pricing", pricingRouter);
 router.use("/wallet", walletRouter);
 router.use("/invoices", invoiceRouter);
 router.use("/admin", adminRouter);
+router.use("/locations", locationsRouter);
+router.use("/staff", staffRouter);
 
 export default router;

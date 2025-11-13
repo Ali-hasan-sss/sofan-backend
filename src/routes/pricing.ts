@@ -22,15 +22,27 @@ router.post(
 );
 
 router.get(
-  "/rules",
+  "/rates",
   requireRoles(ROLES.SUPER_ADMIN, ROLES.BRANCH_ADMIN),
-  asyncHandler(PricingController.listRules)
+  asyncHandler(PricingController.listRates)
 );
 
 router.post(
-  "/rules",
+  "/rates",
   requireRoles(ROLES.SUPER_ADMIN),
-  asyncHandler(PricingController.createRule)
+  asyncHandler(PricingController.createRate)
+);
+
+router.patch(
+  "/rates/:id",
+  requireRoles(ROLES.SUPER_ADMIN),
+  asyncHandler(PricingController.updateRate)
+);
+
+router.delete(
+  "/rates/:id",
+  requireRoles(ROLES.SUPER_ADMIN),
+  asyncHandler(PricingController.removeRate)
 );
 
 export default router;

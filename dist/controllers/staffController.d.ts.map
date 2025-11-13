@@ -1,0 +1,1 @@
+{"version":3,"file":"staffController.d.ts","sourceRoot":"","sources":["../../src/controllers/staffController.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,OAAO,EAAE,QAAQ,EAAE,MAAM,SAAS,CAAC;AAG5C,eAAO,MAAM,eAAe;gBACR,OAAO,OAAO,QAAQ;kBAQpB,OAAO,OAAO,QAAQ;kBAKtB,OAAO,OAAO,QAAQ;kBAKtB,OAAO,OAAO,QAAQ;CAI3C,CAAC"}

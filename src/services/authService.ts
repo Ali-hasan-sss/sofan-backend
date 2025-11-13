@@ -18,6 +18,7 @@ import {
 import { ROLES } from "../types/roles";
 import { env } from "../config/env";
 import { EmailVerificationModel } from "../models/EmailVerification";
+import { StaffProfileModel } from "../models/StaffProfile";
 
 const SALT_ROUNDS = 10;
 const OTP_CODE = "0000";
@@ -41,6 +42,26 @@ const mapUser = (user: UserDocument) => ({
   locale: user.locale,
   isActive: user.isActive,
 });
+
+const mapStaffProfile = (staff: any) =>
+  staff
+    ? {
+        id: staff._id?.toString?.() ?? staff.id?.toString?.() ?? undefined,
+        jobTitle: staff.jobTitle ?? "",
+        permissions: staff.permissions ?? [],
+        isActive: staff.isActive ?? true,
+        branch: staff.branch
+          ? {
+              id:
+                staff.branch._id?.toString?.() ??
+                staff.branch.id?.toString?.() ??
+                undefined,
+              name: staff.branch.name,
+              code: staff.branch.code,
+            }
+          : undefined,
+      }
+    : undefined;
 
 const ensureEmailAvailable = async (email: string) => {
   const existing = await UserModel.findOne({ email });
@@ -107,7 +128,14 @@ export const authService = {
     if (!user) {
       throw httpError("User not found", 404);
     }
-    return mapUser(user);
+    const staffProfile = await StaffProfileModel.findOne({ user: user._id })
+      .populate({ path: "branch", select: "name code" })
+      .lean();
+    const mapped = mapUser(user);
+    if (staffProfile) {
+      (mapped as any).staff = mapStaffProfile(staffProfile);
+    }
+    return mapped;
   },
 
   register: async (payload: unknown) => {
@@ -201,7 +229,16 @@ export const authService = {
 
     const refreshToken = signRefreshToken(tokenPayload);
 
-    return { accessToken, refreshToken, user: mapUser(user) };
+    const staffProfile = await StaffProfileModel.findOne({ user: user._id })
+      .populate({ path: "branch", select: "name code" })
+      .lean();
+
+    const mappedUser = mapUser(user);
+    if (staffProfile) {
+      (mappedUser as any).staff = mapStaffProfile(staffProfile);
+    }
+
+    return { accessToken, refreshToken, user: mappedUser };
   },
 
   refresh: async (payload: unknown) => {

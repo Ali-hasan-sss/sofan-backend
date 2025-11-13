@@ -6,17 +6,24 @@ export declare const shipmentCreateSchema: z.ZodObject<{
         branch_to_door: "branch_to_door";
         door_to_branch: "door_to_branch";
     }>;
-    branchFrom: z.ZodOptional<z.ZodString>;
+    branchFrom: z.ZodString;
     branchTo: z.ZodOptional<z.ZodString>;
+    pricingCurrency: z.ZodString;
     sender: z.ZodObject<{
         name: z.ZodString;
         phone: z.ZodString;
         address: z.ZodString;
+        provinceId: z.ZodOptional<z.ZodString>;
+        districtId: z.ZodOptional<z.ZodString>;
+        villageId: z.ZodOptional<z.ZodString>;
     }, z.core.$strip>;
     recipient: z.ZodObject<{
         name: z.ZodString;
         phone: z.ZodString;
         address: z.ZodString;
+        provinceId: z.ZodOptional<z.ZodString>;
+        districtId: z.ZodOptional<z.ZodString>;
+        villageId: z.ZodOptional<z.ZodString>;
     }, z.core.$strip>;
     packages: z.ZodArray<z.ZodObject<{
         length: z.ZodNumber;
@@ -32,7 +39,6 @@ export declare const shipmentCreateSchema: z.ZodObject<{
     codAmount: z.ZodOptional<z.ZodNumber>;
     codCurrency: z.ZodOptional<z.ZodString>;
     insured: z.ZodOptional<z.ZodBoolean>;
-    pricingRuleId: z.ZodOptional<z.ZodString>;
 }, z.core.$strip>;
 export declare const shipmentFilterSchema: z.ZodObject<{
     country: z.ZodOptional<z.ZodString>;

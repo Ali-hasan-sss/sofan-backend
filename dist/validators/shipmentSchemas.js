@@ -10,6 +10,9 @@ const addressSchema = zod_1.z.object({
     name: zod_1.z.string().min(1),
     phone: zod_1.z.string().min(5),
     address: zod_1.z.string().min(5),
+    provinceId: zod_1.z.string().min(1).optional(),
+    districtId: zod_1.z.string().min(1).optional(),
+    villageId: zod_1.z.string().min(1).optional(),
 });
 const packageSchema = zod_1.z.object({
     length: zod_1.z.number().positive(),
@@ -26,15 +29,15 @@ exports.shipmentCreateSchema = zod_1.z.object({
         "branch_to_door",
         "door_to_branch",
     ]),
-    branchFrom: zod_1.z.string().optional(),
+    branchFrom: zod_1.z.string().min(1),
     branchTo: zod_1.z.string().optional(),
+    pricingCurrency: zod_1.z.string().min(2),
     sender: addressSchema,
     recipient: addressSchema,
     packages: zod_1.z.array(packageSchema).min(1),
     codAmount: zod_1.z.number().nonnegative().optional(),
     codCurrency: zod_1.z.string().min(2).optional(),
     insured: zod_1.z.boolean().optional(),
-    pricingRuleId: zod_1.z.string().optional(),
 });
 exports.shipmentFilterSchema = zod_1.z.object({
     country: zod_1.z.string().optional(),

@@ -1,10 +1,14 @@
-import { PricingRuleDocument, WeightRange } from "../models/PricingRule";
-import { Dimensions } from "../types";
+import { VolumeRateDocument } from "../models/VolumeRate";
+import { ShipmentType } from "../types";
 
-export interface PricingInput {
-  packages: Dimensions[];
-  codAmount?: number;
-  insured?: boolean;
+export interface VolumePricingInput {
+  packages: Array<{
+    length: number;
+    width: number;
+    height: number;
+  }>;
+  shipmentType: ShipmentType;
+  currency?: string;
 }
 
 export interface PricingResult {
@@ -16,48 +20,63 @@ export interface PricingResult {
   codFee: number;
   insuranceFee: number;
   currency: string;
+  localCurrency: string;
   total: number;
 }
 
-export const calculatePricing = (rule: PricingRuleDocument, input: PricingInput): PricingResult => {
-  const volumetricWeight = input.packages.reduce((acc, pkg) => {
-    return acc + pkg.length * pkg.width * pkg.height / rule.volumetricDivisor;
+const CUBIC_DIVISOR = 1_000_000;
+
+const shouldApplyPickupFee = (type: ShipmentType) =>
+  type === "door_to_door" || type === "door_to_branch";
+
+const shouldApplyDeliveryFee = (type: ShipmentType) =>
+  type === "door_to_door" || type === "branch_to_door";
+
+const normalizeCurrency = (currency?: string) =>
+  currency ? currency.toUpperCase() : undefined;
+
+export const calculatePricing = (
+  rate: VolumeRateDocument,
+  input: VolumePricingInput
+): PricingResult => {
+  const requestedCurrency = normalizeCurrency(input.currency);
+  const isUsd = requestedCurrency === "USD";
+  const currencyCode = isUsd ? "USD" : rate.localCurrency.toUpperCase();
+
+  const pricePerCubicMeter = isUsd
+    ? rate.pricePerCubicMeterUsd ?? rate.pricePerCubicMeterLocal ?? 0
+    : rate.pricePerCubicMeterLocal ?? rate.pricePerCubicMeterUsd ?? 0;
+  const pickupFeeBase = isUsd
+    ? rate.pickupDoorFeeUsd ?? rate.pickupDoorFeeLocal ?? 0
+    : rate.pickupDoorFeeLocal ?? rate.pickupDoorFeeUsd ?? 0;
+  const deliveryFeeBase = isUsd
+    ? rate.deliveryDoorFeeUsd ?? rate.deliveryDoorFeeLocal ?? 0
+    : rate.deliveryDoorFeeLocal ?? rate.deliveryDoorFeeUsd ?? 0;
+
+  const volumetricCubicMeters = input.packages.reduce((acc, pkg) => {
+    return acc + (pkg.length * pkg.width * pkg.height) / CUBIC_DIVISOR;
   }, 0);
 
-  const actualWeight = input.packages.reduce((acc, pkg) => acc + pkg.weight, 0);
-  const chargeableWeight = Math.max(actualWeight, volumetricWeight);
+  const volumeCharge = volumetricCubicMeters * pricePerCubicMeter;
+  const pickupFee = shouldApplyPickupFee(input.shipmentType)
+    ? pickupFeeBase
+    : 0;
+  const deliveryFee = shouldApplyDeliveryFee(input.shipmentType)
+    ? deliveryFeeBase
+    : 0;
 
-  const range = resolveWeightRange(rule.weightRanges, chargeableWeight);
-  const weightCharge = Math.ceil(chargeableWeight) * (range?.ratePerKg ?? 0);
-
-  const baseRate = rule.baseRate;
-  const pickupFee = rule.pickupFee;
-  const deliveryFee = rule.deliveryFee;
-  const codFee =
-    input.codAmount && input.codAmount > 0
-      ? Math.round(input.codAmount * (rule.codFeePercent / 100)) + rule.codFeeFlat
-      : 0;
-  const insuranceFee =
-    input.insured && input.codAmount
-      ? Math.round(input.codAmount * (rule.insuranceRatePercent / 100))
-      : 0;
-
-  const total = baseRate + weightCharge + pickupFee + deliveryFee + codFee + insuranceFee;
+  const total = volumeCharge + pickupFee + deliveryFee;
 
   return {
-    baseRate,
-    weightCharge,
-    volumetricWeight: Number(volumetricWeight.toFixed(2)),
-    pickupFee,
-    deliveryFee,
-    codFee,
-    insuranceFee,
-    currency: rule.currency,
-    total,
+    baseRate: 0,
+    weightCharge: Number(volumeCharge.toFixed(2)),
+    volumetricWeight: Number(volumetricCubicMeters.toFixed(4)),
+    pickupFee: Number(pickupFee.toFixed(2)),
+    deliveryFee: Number(deliveryFee.toFixed(2)),
+    codFee: 0,
+    insuranceFee: 0,
+    currency: currencyCode,
+    localCurrency: rate.localCurrency.toUpperCase(),
+    total: Number(total.toFixed(2)),
   };
 };
-
-const resolveWeightRange = (ranges: WeightRange[], weight: number) => {
-  return ranges.find((range) => weight >= range.min && weight <= range.max);
-};
-

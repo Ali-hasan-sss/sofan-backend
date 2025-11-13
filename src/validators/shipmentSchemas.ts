@@ -9,6 +9,9 @@ const addressSchema = z.object({
   name: z.string().min(1),
   phone: z.string().min(5),
   address: z.string().min(5),
+  provinceId: z.string().min(1).optional(),
+  districtId: z.string().min(1).optional(),
+  villageId: z.string().min(1).optional(),
 });
 
 const packageSchema = z.object({
@@ -27,15 +30,15 @@ export const shipmentCreateSchema = z.object({
     "branch_to_door",
     "door_to_branch",
   ]),
-  branchFrom: z.string().optional(),
+  branchFrom: z.string().min(1),
   branchTo: z.string().optional(),
+  pricingCurrency: z.string().min(2),
   sender: addressSchema,
   recipient: addressSchema,
   packages: z.array(packageSchema).min(1),
   codAmount: z.number().nonnegative().optional(),
   codCurrency: z.string().min(2).optional(),
   insured: z.boolean().optional(),
-  pricingRuleId: z.string().optional(),
 });
 
 export const shipmentFilterSchema = z.object({

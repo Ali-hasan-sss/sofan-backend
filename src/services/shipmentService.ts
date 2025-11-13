@@ -1,6 +1,5 @@
 import mongoose from "mongoose";
 import { ShipmentModel } from "../models/Shipment";
-import { PricingRuleModel } from "../models/PricingRule";
 import { WalletModel } from "../models/Wallet";
 import {
   shipmentCreateSchema,
@@ -8,6 +7,8 @@ import {
 } from "../validators/shipmentSchemas";
 import { calculatePricing } from "../utils/pricing";
 import { generateShipmentNumber } from "../utils/shipmentNumber";
+import { locationService } from "./locationService";
+import { VolumeRateModel } from "../models/VolumeRate";
 
 type ListParams = {
   country?: string;
@@ -55,32 +56,87 @@ export const shipmentService = {
 
       const payload = shipmentCreateSchema.parse(data);
 
-      const rule = payload.pricingRuleId
-        ? await PricingRuleModel.findById(payload.pricingRuleId).session(
-            session
-          )
-        : await PricingRuleModel.findOne({ country }).session(session);
+      const packages = payload.packages.map((pkg) => ({
+        ...pkg,
+        volumetricWeight: Number(
+          ((pkg.length * pkg.width * pkg.height) / 1_000_000).toFixed(4)
+        ),
+      }));
+      const originBranchId = payload.branchFrom;
 
-      if (!rule) {
-        const error = new Error("Pricing rule not found");
+      const toObjectId = (value?: string) =>
+        value ? new mongoose.Types.ObjectId(value) : undefined;
+
+      const senderAddress = {
+        name: payload.sender.name,
+        phone: payload.sender.phone,
+        address: payload.sender.address,
+        ...(payload.sender.provinceId
+          ? { province: toObjectId(payload.sender.provinceId) }
+          : {}),
+        ...(payload.sender.districtId
+          ? { district: toObjectId(payload.sender.districtId) }
+          : {}),
+        ...(payload.sender.villageId
+          ? { village: toObjectId(payload.sender.villageId) }
+          : {}),
+      };
+
+      const recipientBranchId =
+        payload.branchTo ??
+        (await locationService
+          .findBranchForVillage(payload.recipient.villageId)
+          .catch(() => undefined));
+
+      const recipientAddress = {
+        name: payload.recipient.name,
+        phone: payload.recipient.phone,
+        address: payload.recipient.address,
+        ...(payload.recipient.provinceId
+          ? { province: toObjectId(payload.recipient.provinceId) }
+          : {}),
+        ...(payload.recipient.districtId
+          ? { district: toObjectId(payload.recipient.districtId) }
+          : {}),
+        ...(payload.recipient.villageId
+          ? { village: toObjectId(payload.recipient.villageId) }
+          : {}),
+      };
+
+      const destinationBranchId = recipientBranchId ?? payload.branchTo;
+
+      if (!originBranchId || !destinationBranchId) {
+        const error = new Error(
+          "Unable to resolve source and destination branches for pricing"
+        );
+        (error as Error & { status?: number }).status = 400;
+        throw error;
+      }
+
+      const rate = await VolumeRateModel.findOne({
+        originBranch: originBranchId,
+        destinationBranch: destinationBranchId,
+        isActive: true,
+      }).session(session);
+
+      if (!rate) {
+        const error = new Error(
+          "Pricing rate not configured for the selected branches"
+        );
         (error as Error & { status?: number }).status = 404;
         throw error;
       }
 
-      const packages = payload.packages.map((pkg) => ({
-        ...pkg,
-        volumetricWeight: Number(
-          (
-            (pkg.length * pkg.width * pkg.height) /
-            rule.volumetricDivisor
-          ).toFixed(2)
-        ),
-      }));
+      const pricingCurrency = payload.pricingCurrency.toUpperCase();
 
-      const pricing = calculatePricing(rule, {
-        packages,
-        codAmount: payload.codAmount,
-        insured: payload.insured,
+      const pricing = calculatePricing(rate, {
+        packages: packages.map((pkg) => ({
+          length: pkg.length,
+          width: pkg.width,
+          height: pkg.height,
+        })),
+        shipmentType: payload.type,
+        currency: pricingCurrency,
       });
 
       const shipmentNumber = await generateShipmentNumber(country);
@@ -91,11 +147,11 @@ export const shipmentService = {
             shipmentNumber,
             country,
             type: payload.type,
-            branchFrom: payload.branchFrom,
-            branchTo: payload.branchTo,
+            branchFrom: toObjectId(originBranchId),
+            branchTo: toObjectId(destinationBranchId),
             createdBy,
-            sender: payload.sender,
-            recipient: payload.recipient,
+            sender: senderAddress,
+            recipient: recipientAddress,
             packages,
             pricing,
             codAmount: payload.codAmount,
@@ -148,14 +204,23 @@ export const shipmentService = {
       throw error;
     }
 
+    const mapAddress = (address: typeof shipment.sender) => ({
+      name: address.name,
+      phone: address.phone,
+      address: address.address,
+      provinceId: address.province ? address.province.toString() : undefined,
+      districtId: address.district ? address.district.toString() : undefined,
+      villageId: address.village ? address.village.toString() : undefined,
+    });
+
     return {
       id: shipment._id.toString(),
       shipmentNumber: shipment.shipmentNumber,
       status: shipment.status,
       pricing: shipment.pricing,
       packages: shipment.packages,
-      sender: shipment.sender,
-      recipient: shipment.recipient,
+      sender: mapAddress(shipment.sender),
+      recipient: mapAddress(shipment.recipient),
       approvals: shipment.approvals,
     };
   },
@@ -171,12 +236,21 @@ export const shipmentService = {
       throw error;
     }
 
+    const mapAddress = (address: typeof shipment.sender) => ({
+      name: address.name,
+      phone: address.phone,
+      address: address.address,
+      provinceId: address.province ? address.province.toString() : undefined,
+      districtId: address.district ? address.district.toString() : undefined,
+      villageId: address.village ? address.village.toString() : undefined,
+    });
+
     return {
       shipmentNumber: shipment.shipmentNumber,
       status: shipment.status,
       country: shipment.country,
-      sender: shipment.sender,
-      recipient: shipment.recipient,
+      sender: mapAddress(shipment.sender),
+      recipient: mapAddress(shipment.recipient),
       pricing: shipment.pricing,
       packages: shipment.packages,
       updatedAt: shipment.updatedAt,

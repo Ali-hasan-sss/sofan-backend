@@ -1,30 +1,42 @@
 import { z } from "zod";
 export declare const pricingCalcSchema: z.ZodObject<{
-    pricingRuleId: z.ZodOptional<z.ZodString>;
+    originBranchId: z.ZodString;
+    destinationBranchId: z.ZodString;
+    shipmentType: z.ZodEnum<{
+        door_to_door: "door_to_door";
+        branch_to_branch: "branch_to_branch";
+        branch_to_door: "branch_to_door";
+        door_to_branch: "door_to_branch";
+    }>;
     packages: z.ZodArray<z.ZodObject<{
         length: z.ZodNumber;
         width: z.ZodNumber;
         height: z.ZodNumber;
-        weight: z.ZodNumber;
     }, z.core.$strip>>;
-    codAmount: z.ZodOptional<z.ZodNumber>;
-    insured: z.ZodOptional<z.ZodBoolean>;
+    currency: z.ZodOptional<z.ZodString>;
 }, z.core.$strip>;
-export declare const pricingRuleSchema: z.ZodObject<{
-    country: z.ZodString;
-    branch: z.ZodOptional<z.ZodString>;
-    currency: z.ZodString;
-    volumetricDivisor: z.ZodNumber;
-    pickupFee: z.ZodDefault<z.ZodNumber>;
-    deliveryFee: z.ZodDefault<z.ZodNumber>;
-    codFeePercent: z.ZodDefault<z.ZodNumber>;
-    codFeeFlat: z.ZodDefault<z.ZodNumber>;
-    insuranceRatePercent: z.ZodDefault<z.ZodNumber>;
-    weightRanges: z.ZodArray<z.ZodObject<{
-        min: z.ZodNumber;
-        max: z.ZodNumber;
-        ratePerKg: z.ZodNumber;
-    }, z.core.$strip>>;
-    baseRate: z.ZodDefault<z.ZodNumber>;
+export declare const createVolumeRateSchema: z.ZodObject<{
+    originBranchId: z.ZodString;
+    destinationBranchId: z.ZodString;
+    localCurrency: z.ZodString;
+    pricePerCubicMeterLocal: z.ZodNumber;
+    pricePerCubicMeterUsd: z.ZodNumber;
+    pickupDoorFeeLocal: z.ZodDefault<z.ZodNumber>;
+    pickupDoorFeeUsd: z.ZodDefault<z.ZodNumber>;
+    deliveryDoorFeeLocal: z.ZodDefault<z.ZodNumber>;
+    deliveryDoorFeeUsd: z.ZodDefault<z.ZodNumber>;
+    isActive: z.ZodDefault<z.ZodBoolean>;
+}, z.core.$strip>;
+export declare const updateVolumeRateSchema: z.ZodObject<{
+    localCurrency: z.ZodOptional<z.ZodString>;
+    pricePerCubicMeterLocal: z.ZodOptional<z.ZodNumber>;
+    pricePerCubicMeterUsd: z.ZodOptional<z.ZodNumber>;
+    pickupDoorFeeLocal: z.ZodOptional<z.ZodDefault<z.ZodNumber>>;
+    pickupDoorFeeUsd: z.ZodOptional<z.ZodDefault<z.ZodNumber>>;
+    deliveryDoorFeeLocal: z.ZodOptional<z.ZodDefault<z.ZodNumber>>;
+    deliveryDoorFeeUsd: z.ZodOptional<z.ZodDefault<z.ZodNumber>>;
+    isActive: z.ZodOptional<z.ZodBoolean>;
+    originBranchId: z.ZodOptional<z.ZodString>;
+    destinationBranchId: z.ZodOptional<z.ZodString>;
 }, z.core.$strip>;
 //# sourceMappingURL=pricingSchemas.d.ts.map

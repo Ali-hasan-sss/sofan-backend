@@ -13,6 +13,7 @@ const token_1 = require("../utils/token");
 const roles_1 = require("../types/roles");
 const env_1 = require("../config/env");
 const EmailVerification_1 = require("../models/EmailVerification");
+const StaffProfile_1 = require("../models/StaffProfile");
 const SALT_ROUNDS = 10;
 const OTP_CODE = "0000";
 const OTP_TTL_MS = 10 * 60 * 1000;
@@ -33,6 +34,23 @@ const mapUser = (user) => ({
     locale: user.locale,
     isActive: user.isActive,
 });
+const mapStaffProfile = (staff) => staff
+    ? {
+        id: staff._id?.toString?.() ?? staff.id?.toString?.() ?? undefined,
+        jobTitle: staff.jobTitle ?? "",
+        permissions: staff.permissions ?? [],
+        isActive: staff.isActive ?? true,
+        branch: staff.branch
+            ? {
+                id: staff.branch._id?.toString?.() ??
+                    staff.branch.id?.toString?.() ??
+                    undefined,
+                name: staff.branch.name,
+                code: staff.branch.code,
+            }
+            : undefined,
+    }
+    : undefined;
 const ensureEmailAvailable = async (email) => {
     const existing = await User_1.UserModel.findOne({ email });
     if (existing) {
@@ -81,7 +99,14 @@ exports.authService = {
         if (!user) {
             throw httpError("User not found", 404);
         }
-        return mapUser(user);
+        const staffProfile = await StaffProfile_1.StaffProfileModel.findOne({ user: user._id })
+            .populate({ path: "branch", select: "name code" })
+            .lean();
+        const mapped = mapUser(user);
+        if (staffProfile) {
+            mapped.staff = mapStaffProfile(staffProfile);
+        }
+        return mapped;
     },
     register: async (payload) => {
         const data = authSchemas_1.registerSchema.parse(payload);
@@ -152,7 +177,14 @@ exports.authService = {
         };
         const accessToken = (0, token_1.signAccessToken)(tokenPayload);
         const refreshToken = (0, token_1.signRefreshToken)(tokenPayload);
-        return { accessToken, refreshToken, user: mapUser(user) };
+        const staffProfile = await StaffProfile_1.StaffProfileModel.findOne({ user: user._id })
+            .populate({ path: "branch", select: "name code" })
+            .lean();
+        const mappedUser = mapUser(user);
+        if (staffProfile) {
+            mappedUser.staff = mapStaffProfile(staffProfile);
+        }
+        return { accessToken, refreshToken, user: mappedUser };
     },
     refresh: async (payload) => {
         const data = authSchemas_1.refreshSchema.parse(payload);

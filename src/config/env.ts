@@ -29,12 +29,12 @@ const EnvSchema = z.object({
   ACCESS_TOKEN_TTL: z.string().default("15m"),
   REFRESH_TOKEN_TTL: z.string().default("7d"),
   DEFAULT_COUNTRY: z.string().default("LB"),
-  BASE_URL: z.string().default("http://localhost:4000"),
+  BASE_URL: z.string().default("http://localhost:3000"),
   DEFAULT_ADMIN_EMAIL: z.string().email().default("admin@sofan.com"),
   DEFAULT_ADMIN_PASSWORD: z.string().min(8).default("ChangeMe!123"),
   CORS_ALLOWED_ORIGINS: z
     .string()
-    .default("http://localhost:3000,http://localhost:4000")
+    .default("http://localhost:3000,https://sofan.vercel.app")
     .transform((value) =>
       value
         .split(",")

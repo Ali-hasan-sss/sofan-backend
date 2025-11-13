@@ -30,16 +30,22 @@ export declare const shipmentService: {
         status: import("../models/Shipment").ShipmentStatus;
         pricing: mongoose.FlattenMaps<import("../models/Shipment").PricingBreakdown>;
         packages: mongoose.FlattenMaps<import("../models/Shipment").PackageDetails>[];
-        sender: mongoose.FlattenMaps<{
+        sender: {
             name: string;
             phone: string;
             address: string;
-        }>;
-        recipient: mongoose.FlattenMaps<{
+            provinceId: string | undefined;
+            districtId: string | undefined;
+            villageId: string | undefined;
+        };
+        recipient: {
             name: string;
             phone: string;
             address: string;
-        }>;
+            provinceId: string | undefined;
+            districtId: string | undefined;
+            villageId: string | undefined;
+        };
         approvals: mongoose.FlattenMaps<{
             approvedBy: mongoose.Types.ObjectId;
             approvedAt: Date;
@@ -49,16 +55,22 @@ export declare const shipmentService: {
         shipmentNumber: string;
         status: import("../models/Shipment").ShipmentStatus;
         country: string;
-        sender: mongoose.FlattenMaps<{
+        sender: {
             name: string;
             phone: string;
             address: string;
-        }>;
-        recipient: mongoose.FlattenMaps<{
+            provinceId: string | undefined;
+            districtId: string | undefined;
+            villageId: string | undefined;
+        };
+        recipient: {
             name: string;
             phone: string;
             address: string;
-        }>;
+            provinceId: string | undefined;
+            districtId: string | undefined;
+            villageId: string | undefined;
+        };
         pricing: mongoose.FlattenMaps<import("../models/Shipment").PricingBreakdown>;
         packages: mongoose.FlattenMaps<import("../models/Shipment").PackageDetails>[];
         updatedAt: Date;

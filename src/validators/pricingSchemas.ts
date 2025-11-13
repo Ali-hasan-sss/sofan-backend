@@ -1,37 +1,43 @@
 import { z } from "zod";
-
-const weightRangeSchema = z.object({
-  min: z.number().nonnegative(),
-  max: z.number().positive(),
-  ratePerKg: z.number().nonnegative(),
+const packageDimensionsSchema = z.object({
+  length: z.number().positive(),
+  width: z.number().positive(),
+  height: z.number().positive(),
 });
+
+const shipmentTypes = [
+  "door_to_door",
+  "branch_to_branch",
+  "branch_to_door",
+  "door_to_branch",
+] as const;
 
 export const pricingCalcSchema = z.object({
-  pricingRuleId: z.string().optional(),
-  packages: z
-    .array(
-      z.object({
-        length: z.number().positive(),
-        width: z.number().positive(),
-        height: z.number().positive(),
-        weight: z.number().positive(),
-      })
-    )
-    .min(1),
-  codAmount: z.number().nonnegative().optional(),
-  insured: z.boolean().optional(),
+  originBranchId: z.string().min(1),
+  destinationBranchId: z.string().min(1),
+  shipmentType: z.enum(shipmentTypes),
+  packages: z.array(packageDimensionsSchema).min(1),
+  currency: z.string().min(2).optional(),
 });
 
-export const pricingRuleSchema = z.object({
-  country: z.string().min(2),
-  branch: z.string().optional(),
-  currency: z.string().min(2),
-  volumetricDivisor: z.number().positive(),
-  pickupFee: z.number().nonnegative().default(0),
-  deliveryFee: z.number().nonnegative().default(0),
-  codFeePercent: z.number().nonnegative().default(0),
-  codFeeFlat: z.number().nonnegative().default(0),
-  insuranceRatePercent: z.number().nonnegative().default(0),
-  weightRanges: z.array(weightRangeSchema).min(1),
-  baseRate: z.number().nonnegative().default(0),
+export const createVolumeRateSchema = z.object({
+  originBranchId: z.string().min(1),
+  destinationBranchId: z.string().min(1),
+  localCurrency: z.string().min(2),
+  pricePerCubicMeterLocal: z.number().nonnegative(),
+  pricePerCubicMeterUsd: z.number().nonnegative(),
+  pickupDoorFeeLocal: z.number().nonnegative().default(0),
+  pickupDoorFeeUsd: z.number().nonnegative().default(0),
+  deliveryDoorFeeLocal: z.number().nonnegative().default(0),
+  deliveryDoorFeeUsd: z.number().nonnegative().default(0),
+  isActive: z.boolean().default(true),
 });
+
+export const updateVolumeRateSchema = createVolumeRateSchema
+  .omit({ isActive: true })
+  .partial()
+  .extend({
+    isActive: z.boolean().optional(),
+    originBranchId: z.string().min(1).optional(),
+    destinationBranchId: z.string().min(1).optional(),
+  });

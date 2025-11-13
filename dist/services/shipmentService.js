@@ -6,11 +6,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.shipmentService = void 0;
 const mongoose_1 = __importDefault(require("mongoose"));
 const Shipment_1 = require("../models/Shipment");
-const PricingRule_1 = require("../models/PricingRule");
 const Wallet_1 = require("../models/Wallet");
 const shipmentSchemas_1 = require("../validators/shipmentSchemas");
 const pricing_1 = require("../utils/pricing");
 const shipmentNumber_1 = require("../utils/shipmentNumber");
+const locationService_1 = require("./locationService");
+const VolumeRate_1 = require("../models/VolumeRate");
 exports.shipmentService = {
     list: async (filters) => {
         const filter = shipmentSchemas_1.shipmentFilterSchema.parse(filters);
@@ -40,23 +41,69 @@ exports.shipmentService = {
         try {
             session.startTransaction();
             const payload = shipmentSchemas_1.shipmentCreateSchema.parse(data);
-            const rule = payload.pricingRuleId
-                ? await PricingRule_1.PricingRuleModel.findById(payload.pricingRuleId).session(session)
-                : await PricingRule_1.PricingRuleModel.findOne({ country }).session(session);
-            if (!rule) {
-                const error = new Error("Pricing rule not found");
+            const packages = payload.packages.map((pkg) => ({
+                ...pkg,
+                volumetricWeight: Number(((pkg.length * pkg.width * pkg.height) / 1000000).toFixed(4)),
+            }));
+            const originBranchId = payload.branchFrom;
+            const toObjectId = (value) => value ? new mongoose_1.default.Types.ObjectId(value) : undefined;
+            const senderAddress = {
+                name: payload.sender.name,
+                phone: payload.sender.phone,
+                address: payload.sender.address,
+                ...(payload.sender.provinceId
+                    ? { province: toObjectId(payload.sender.provinceId) }
+                    : {}),
+                ...(payload.sender.districtId
+                    ? { district: toObjectId(payload.sender.districtId) }
+                    : {}),
+                ...(payload.sender.villageId
+                    ? { village: toObjectId(payload.sender.villageId) }
+                    : {}),
+            };
+            const recipientBranchId = payload.branchTo ??
+                (await locationService_1.locationService
+                    .findBranchForVillage(payload.recipient.villageId)
+                    .catch(() => undefined));
+            const recipientAddress = {
+                name: payload.recipient.name,
+                phone: payload.recipient.phone,
+                address: payload.recipient.address,
+                ...(payload.recipient.provinceId
+                    ? { province: toObjectId(payload.recipient.provinceId) }
+                    : {}),
+                ...(payload.recipient.districtId
+                    ? { district: toObjectId(payload.recipient.districtId) }
+                    : {}),
+                ...(payload.recipient.villageId
+                    ? { village: toObjectId(payload.recipient.villageId) }
+                    : {}),
+            };
+            const destinationBranchId = recipientBranchId ?? payload.branchTo;
+            if (!originBranchId || !destinationBranchId) {
+                const error = new Error("Unable to resolve source and destination branches for pricing");
+                error.status = 400;
+                throw error;
+            }
+            const rate = await VolumeRate_1.VolumeRateModel.findOne({
+                originBranch: originBranchId,
+                destinationBranch: destinationBranchId,
+                isActive: true,
+            }).session(session);
+            if (!rate) {
+                const error = new Error("Pricing rate not configured for the selected branches");
                 error.status = 404;
                 throw error;
             }
-            const packages = payload.packages.map((pkg) => ({
-                ...pkg,
-                volumetricWeight: Number(((pkg.length * pkg.width * pkg.height) /
-                    rule.volumetricDivisor).toFixed(2)),
-            }));
-            const pricing = (0, pricing_1.calculatePricing)(rule, {
-                packages,
-                codAmount: payload.codAmount,
-                insured: payload.insured,
+            const pricingCurrency = payload.pricingCurrency.toUpperCase();
+            const pricing = (0, pricing_1.calculatePricing)(rate, {
+                packages: packages.map((pkg) => ({
+                    length: pkg.length,
+                    width: pkg.width,
+                    height: pkg.height,
+                })),
+                shipmentType: payload.type,
+                currency: pricingCurrency,
             });
             const shipmentNumber = await (0, shipmentNumber_1.generateShipmentNumber)(country);
             const shipment = await Shipment_1.ShipmentModel.create([
@@ -64,11 +111,11 @@ exports.shipmentService = {
                     shipmentNumber,
                     country,
                     type: payload.type,
-                    branchFrom: payload.branchFrom,
-                    branchTo: payload.branchTo,
+                    branchFrom: toObjectId(originBranchId),
+                    branchTo: toObjectId(destinationBranchId),
                     createdBy,
-                    sender: payload.sender,
-                    recipient: payload.recipient,
+                    sender: senderAddress,
+                    recipient: recipientAddress,
                     packages,
                     pricing,
                     codAmount: payload.codAmount,
@@ -115,14 +162,22 @@ exports.shipmentService = {
             error.status = 404;
             throw error;
         }
+        const mapAddress = (address) => ({
+            name: address.name,
+            phone: address.phone,
+            address: address.address,
+            provinceId: address.province ? address.province.toString() : undefined,
+            districtId: address.district ? address.district.toString() : undefined,
+            villageId: address.village ? address.village.toString() : undefined,
+        });
         return {
             id: shipment._id.toString(),
             shipmentNumber: shipment.shipmentNumber,
             status: shipment.status,
             pricing: shipment.pricing,
             packages: shipment.packages,
-            sender: shipment.sender,
-            recipient: shipment.recipient,
+            sender: mapAddress(shipment.sender),
+            recipient: mapAddress(shipment.recipient),
             approvals: shipment.approvals,
         };
     },
@@ -136,12 +191,20 @@ exports.shipmentService = {
             error.status = 404;
             throw error;
         }
+        const mapAddress = (address) => ({
+            name: address.name,
+            phone: address.phone,
+            address: address.address,
+            provinceId: address.province ? address.province.toString() : undefined,
+            districtId: address.district ? address.district.toString() : undefined,
+            villageId: address.village ? address.village.toString() : undefined,
+        });
         return {
             shipmentNumber: shipment.shipmentNumber,
             status: shipment.status,
             country: shipment.country,
-            sender: shipment.sender,
-            recipient: shipment.recipient,
+            sender: mapAddress(shipment.sender),
+            recipient: mapAddress(shipment.recipient),
             pricing: shipment.pricing,
             packages: shipment.packages,
             updatedAt: shipment.updatedAt,

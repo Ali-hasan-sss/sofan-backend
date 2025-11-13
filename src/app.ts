@@ -7,14 +7,13 @@ import { errorHandler } from "./middlewares/errorHandler";
 export const createApp = () => {
   const app = express();
 
+  const allowedOrigins = ["https://sofan.vercel.app", "http://localhost:3000"];
+
   app.use((req, res, next) => {
-    const requestOrigin = req.headers.origin;
-    if (requestOrigin) {
-      res.header("Access-Control-Allow-Origin", requestOrigin);
-      res.header("Vary", "Origin");
+    const origin = req.headers.origin;
+    if (origin && allowedOrigins.includes(origin)) {
+      res.header("Access-Control-Allow-Origin", origin);
       res.header("Access-Control-Allow-Credentials", "true");
-    } else {
-      res.header("Access-Control-Allow-Origin", "*");
     }
     res.header(
       "Access-Control-Allow-Headers",

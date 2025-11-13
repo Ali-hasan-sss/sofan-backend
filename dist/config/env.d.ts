@@ -15,6 +15,7 @@ declare const EnvSchema: z.ZodObject<{
     BASE_URL: z.ZodDefault<z.ZodString>;
     DEFAULT_ADMIN_EMAIL: z.ZodDefault<z.ZodString>;
     DEFAULT_ADMIN_PASSWORD: z.ZodDefault<z.ZodString>;
+    CORS_ALLOWED_ORIGINS: z.ZodPipe<z.ZodDefault<z.ZodString>, z.ZodTransform<string[], string>>;
 }, z.core.$strip>;
 export type Env = z.infer<typeof EnvSchema>;
 export declare const env: Env;

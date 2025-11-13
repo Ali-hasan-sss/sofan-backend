@@ -1,38 +1,46 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.calculatePricing = void 0;
-const calculatePricing = (rule, input) => {
-    const volumetricWeight = input.packages.reduce((acc, pkg) => {
-        return acc + pkg.length * pkg.width * pkg.height / rule.volumetricDivisor;
+const CUBIC_DIVISOR = 1000000;
+const shouldApplyPickupFee = (type) => type === "door_to_door" || type === "door_to_branch";
+const shouldApplyDeliveryFee = (type) => type === "door_to_door" || type === "branch_to_door";
+const normalizeCurrency = (currency) => currency ? currency.toUpperCase() : undefined;
+const calculatePricing = (rate, input) => {
+    const requestedCurrency = normalizeCurrency(input.currency);
+    const isUsd = requestedCurrency === "USD";
+    const currencyCode = isUsd ? "USD" : rate.localCurrency.toUpperCase();
+    const pricePerCubicMeter = isUsd
+        ? rate.pricePerCubicMeterUsd ?? rate.pricePerCubicMeterLocal ?? 0
+        : rate.pricePerCubicMeterLocal ?? rate.pricePerCubicMeterUsd ?? 0;
+    const pickupFeeBase = isUsd
+        ? rate.pickupDoorFeeUsd ?? rate.pickupDoorFeeLocal ?? 0
+        : rate.pickupDoorFeeLocal ?? rate.pickupDoorFeeUsd ?? 0;
+    const deliveryFeeBase = isUsd
+        ? rate.deliveryDoorFeeUsd ?? rate.deliveryDoorFeeLocal ?? 0
+        : rate.deliveryDoorFeeLocal ?? rate.deliveryDoorFeeUsd ?? 0;
+    const volumetricCubicMeters = input.packages.reduce((acc, pkg) => {
+        return acc + (pkg.length * pkg.width * pkg.height) / CUBIC_DIVISOR;
     }, 0);
-    const actualWeight = input.packages.reduce((acc, pkg) => acc + pkg.weight, 0);
-    const chargeableWeight = Math.max(actualWeight, volumetricWeight);
-    const range = resolveWeightRange(rule.weightRanges, chargeableWeight);
-    const weightCharge = Math.ceil(chargeableWeight) * (range?.ratePerKg ?? 0);
-    const baseRate = rule.baseRate;
-    const pickupFee = rule.pickupFee;
-    const deliveryFee = rule.deliveryFee;
-    const codFee = input.codAmount && input.codAmount > 0
-        ? Math.round(input.codAmount * (rule.codFeePercent / 100)) + rule.codFeeFlat
+    const volumeCharge = volumetricCubicMeters * pricePerCubicMeter;
+    const pickupFee = shouldApplyPickupFee(input.shipmentType)
+        ? pickupFeeBase
         : 0;
-    const insuranceFee = input.insured && input.codAmount
-        ? Math.round(input.codAmount * (rule.insuranceRatePercent / 100))
+    const deliveryFee = shouldApplyDeliveryFee(input.shipmentType)
+        ? deliveryFeeBase
         : 0;
-    const total = baseRate + weightCharge + pickupFee + deliveryFee + codFee + insuranceFee;
+    const total = volumeCharge + pickupFee + deliveryFee;
     return {
-        baseRate,
-        weightCharge,
-        volumetricWeight: Number(volumetricWeight.toFixed(2)),
-        pickupFee,
-        deliveryFee,
-        codFee,
-        insuranceFee,
-        currency: rule.currency,
-        total,
+        baseRate: 0,
+        weightCharge: Number(volumeCharge.toFixed(2)),
+        volumetricWeight: Number(volumetricCubicMeters.toFixed(4)),
+        pickupFee: Number(pickupFee.toFixed(2)),
+        deliveryFee: Number(deliveryFee.toFixed(2)),
+        codFee: 0,
+        insuranceFee: 0,
+        currency: currencyCode,
+        localCurrency: rate.localCurrency.toUpperCase(),
+        total: Number(total.toFixed(2)),
     };
 };
 exports.calculatePricing = calculatePricing;
-const resolveWeightRange = (ranges, weight) => {
-    return ranges.find((range) => weight >= range.min && weight <= range.max);
-};
 //# sourceMappingURL=pricing.js.map

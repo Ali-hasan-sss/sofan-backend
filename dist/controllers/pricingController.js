@@ -4,19 +4,24 @@ exports.PricingController = void 0;
 const pricingService_1 = require("../services/pricingService");
 exports.PricingController = {
     calculate: async (req, res) => {
-        const pricing = await pricingService_1.pricingService.calculate({
-            payload: req.body,
-            country: req.user?.country,
-        });
+        const pricing = await pricingService_1.pricingService.calculate({ payload: req.body });
         res.json(pricing);
     },
-    listRules: async (req, res) => {
-        const rules = await pricingService_1.pricingService.listRules(req.user?.country);
-        res.json(rules);
+    listRates: async (_req, res) => {
+        const rates = await pricingService_1.pricingService.listRates();
+        res.json(rates);
     },
-    createRule: async (req, res) => {
-        const rule = await pricingService_1.pricingService.createRule(req.body);
-        res.status(201).json(rule);
+    createRate: async (req, res) => {
+        const rate = await pricingService_1.pricingService.createRate(req.body);
+        res.status(201).json(rate);
+    },
+    updateRate: async (req, res) => {
+        const rate = await pricingService_1.pricingService.updateRate(req.params.id, req.body);
+        res.json(rate);
+    },
+    removeRate: async (req, res) => {
+        const result = await pricingService_1.pricingService.removeRate(req.params.id);
+        res.json(result);
     },
 };
 //# sourceMappingURL=pricingController.js.map

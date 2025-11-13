@@ -1,0 +1,1 @@
+{"version":3,"file":"Province.d.ts","sourceRoot":"","sources":["../../src/models/Province.ts"],"names":[],"mappings":"AAAA,OAAO,EAAiB,KAAK,QAAQ,EAAE,MAAM,UAAU,CAAC;AAExD,MAAM,WAAW,gBAAiB,SAAQ,QAAQ;IAChD,IAAI,EAAE,MAAM,CAAC;IACb,IAAI,CAAC,EAAE,MAAM,CAAC;IACd,OAAO,EAAE,MAAM,CAAC;IAChB,SAAS,EAAE,IAAI,CAAC;IAChB,SAAS,EAAE,IAAI,CAAC;CACjB;AAaD,eAAO,MAAM,aAAa;;;;OAGzB,CAAC"}
