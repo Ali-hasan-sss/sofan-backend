@@ -82,13 +82,23 @@ export const pricingService = {
   calculate: async ({ payload }: { payload: unknown }) => {
     const data = pricingCalcSchema.parse(payload);
 
-    const rate = await VolumeRateModel.findOne({
+    let rate = await VolumeRateModel.findOne({
       originBranch: data.originBranchId,
       destinationBranch: data.destinationBranchId,
       isActive: true,
     })
       .populate({ path: "originBranch", select: "name code" })
       .populate({ path: "destinationBranch", select: "name code" });
+
+    if (!rate) {
+      rate = await VolumeRateModel.findOne({
+        originBranch: data.destinationBranchId,
+        destinationBranch: data.originBranchId,
+        isActive: true,
+      })
+        .populate({ path: "originBranch", select: "name code" })
+        .populate({ path: "destinationBranch", select: "name code" });
+    }
 
     if (!rate) {
       throw httpError("Pricing rate not configured for selected branches", 404);
@@ -120,7 +130,12 @@ export const pricingService = {
       destinationBranch: data.destinationBranchId,
     });
 
-    if (existing) {
+    const reverseExisting = await VolumeRateModel.findOne({
+      originBranch: data.destinationBranchId,
+      destinationBranch: data.originBranchId,
+    });
+
+    if (existing || reverseExisting) {
       throw httpError(
         "Pricing rate already configured for this branch pair",
         409
@@ -165,7 +180,12 @@ export const pricingService = {
       originBranch: targetOrigin,
       destinationBranch: targetDestination,
     });
-    if (duplicate) {
+    const reverseDuplicate = await VolumeRateModel.findOne({
+      _id: { $ne: id },
+      originBranch: targetDestination,
+      destinationBranch: targetOrigin,
+    });
+    if (duplicate || reverseDuplicate) {
       throw httpError(
         "Pricing rate already configured for this branch pair",
         409

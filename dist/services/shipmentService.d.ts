@@ -55,10 +55,34 @@ export declare const shipmentService: {
         status: import("../models/Shipment").ShipmentStatus;
         pricing: import("../utils/pricing").PricingResult;
     }>;
+    update: ({ id, data, updatedBy, }: {
+        id: string;
+        data: unknown;
+        updatedBy: string;
+    }) => Promise<{
+        id: any;
+        shipmentNumber: string;
+        status: import("../models/Shipment").ShipmentStatus;
+        pricing: import("../utils/pricing").PricingResult;
+        updatedBy: string;
+    }>;
+    remove: ({ id, requestedBy }: {
+        id: string;
+        requestedBy: string;
+    }) => Promise<{
+        id: string;
+        deleted: boolean;
+        requestedBy: string;
+    }>;
     getById: (id: string) => Promise<{
         id: string;
         shipmentNumber: string;
         status: import("../models/Shipment").ShipmentStatus;
+        type: import("../types").ShipmentType;
+        paymentMethod: "wallet" | "prepaid" | "cod" | "contract";
+        isFragile: boolean;
+        additionalInfo: string;
+        goodsValue: mongoose.FlattenMaps<import("../types").Money> | null;
         pricing: mongoose.FlattenMaps<import("../models/Shipment").PricingBreakdown>;
         packages: mongoose.FlattenMaps<import("../models/Shipment").PackageDetails>[];
         sender: {
@@ -77,10 +101,24 @@ export declare const shipmentService: {
             districtId: string | undefined;
             villageId: string | undefined;
         };
+        branchFrom: {
+            id: any;
+            name: any;
+            code: any;
+        } | undefined;
+        branchTo: {
+            id: any;
+            name: any;
+            code: any;
+        } | undefined;
+        codAmount: number | null;
+        codCurrency: string | null;
         approvals: mongoose.FlattenMaps<{
             approvedBy: mongoose.Types.ObjectId;
             approvedAt: Date;
         }>[];
+        createdAt: Date;
+        updatedAt: Date;
     }>;
     getByNumber: (shipmentNumber: string) => Promise<{
         shipmentNumber: string;

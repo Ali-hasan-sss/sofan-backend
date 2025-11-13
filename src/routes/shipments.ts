@@ -47,4 +47,16 @@ router.get(
   asyncHandler(ShipmentController.getById)
 );
 
+router.patch(
+  "/:id",
+  requireRoles(ROLES.SUPER_ADMIN, ROLES.BRANCH_ADMIN, ROLES.EMPLOYEE),
+  asyncHandler(ShipmentController.update)
+);
+
+router.delete(
+  "/:id",
+  requireRoles(ROLES.SUPER_ADMIN, ROLES.BRANCH_ADMIN),
+  asyncHandler(ShipmentController.remove)
+);
+
 export default router;

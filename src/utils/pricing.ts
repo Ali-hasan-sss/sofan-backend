@@ -54,19 +54,26 @@ export const calculatePricing = (
     ? rate.deliveryDoorFeeUsd ?? rate.deliveryDoorFeeLocal ?? 0
     : rate.deliveryDoorFeeLocal ?? rate.deliveryDoorFeeUsd ?? 0;
 
-  const volumetricCubicMeters = input.packages.reduce((acc, pkg) => {
-    const quantity = pkg.quantity ?? 1;
-    return (
-      acc + quantity * ((pkg.length * pkg.width * pkg.height) / CUBIC_DIVISOR)
-    );
-  }, 0);
+  const { volumetricCubicMeters, totalPackages } = input.packages.reduce(
+    (acc, pkg) => {
+      const quantity = pkg.quantity ?? 1;
+      const packageVolume =
+        (pkg.length * pkg.width * pkg.height) / CUBIC_DIVISOR;
+      return {
+        volumetricCubicMeters:
+          acc.volumetricCubicMeters + quantity * packageVolume,
+        totalPackages: acc.totalPackages + quantity,
+      };
+    },
+    { volumetricCubicMeters: 0, totalPackages: 0 }
+  );
 
   const volumeCharge = volumetricCubicMeters * pricePerCubicMeter;
   const pickupFee = shouldApplyPickupFee(input.shipmentType)
-    ? pickupFeeBase
+    ? pickupFeeBase * totalPackages
     : 0;
   const deliveryFee = shouldApplyDeliveryFee(input.shipmentType)
-    ? deliveryFeeBase
+    ? deliveryFeeBase * totalPackages
     : 0;
 
   const total = volumeCharge + pickupFee + deliveryFee;

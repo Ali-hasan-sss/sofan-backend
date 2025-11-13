@@ -25,6 +25,23 @@ export const ShipmentController = {
     res.json(shipment);
   },
 
+  update: async (req: Request, res: Response) => {
+    const shipment = await shipmentService.update({
+      id: req.params.id,
+      data: req.body,
+      updatedBy: req.user?.id as string,
+    });
+    res.json(shipment);
+  },
+
+  remove: async (req: Request, res: Response) => {
+    const result = await shipmentService.remove({
+      id: req.params.id,
+      requestedBy: req.user?.id as string,
+    });
+    res.json(result);
+  },
+
   trackPublic: async (req: Request, res: Response) => {
     const shipment = await shipmentService.getByNumber(req.params.number);
     res.json(shipment);

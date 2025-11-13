@@ -58,13 +58,22 @@ const mapVolumeRate = (rate) => {
 exports.pricingService = {
     calculate: async ({ payload }) => {
         const data = pricingSchemas_1.pricingCalcSchema.parse(payload);
-        const rate = await VolumeRate_1.VolumeRateModel.findOne({
+        let rate = await VolumeRate_1.VolumeRateModel.findOne({
             originBranch: data.originBranchId,
             destinationBranch: data.destinationBranchId,
             isActive: true,
         })
             .populate({ path: "originBranch", select: "name code" })
             .populate({ path: "destinationBranch", select: "name code" });
+        if (!rate) {
+            rate = await VolumeRate_1.VolumeRateModel.findOne({
+                originBranch: data.destinationBranchId,
+                destinationBranch: data.originBranchId,
+                isActive: true,
+            })
+                .populate({ path: "originBranch", select: "name code" })
+                .populate({ path: "destinationBranch", select: "name code" });
+        }
         if (!rate) {
             throw httpError("Pricing rate not configured for selected branches", 404);
         }
@@ -89,7 +98,11 @@ exports.pricingService = {
             originBranch: data.originBranchId,
             destinationBranch: data.destinationBranchId,
         });
-        if (existing) {
+        const reverseExisting = await VolumeRate_1.VolumeRateModel.findOne({
+            originBranch: data.destinationBranchId,
+            destinationBranch: data.originBranchId,
+        });
+        if (existing || reverseExisting) {
             throw httpError("Pricing rate already configured for this branch pair", 409);
         }
         const rate = await VolumeRate_1.VolumeRateModel.create({
@@ -123,7 +136,12 @@ exports.pricingService = {
             originBranch: targetOrigin,
             destinationBranch: targetDestination,
         });
-        if (duplicate) {
+        const reverseDuplicate = await VolumeRate_1.VolumeRateModel.findOne({
+            _id: { $ne: id },
+            originBranch: targetDestination,
+            destinationBranch: targetOrigin,
+        });
+        if (duplicate || reverseDuplicate) {
             throw httpError("Pricing rate already configured for this branch pair", 409);
         }
         const rate = await VolumeRate_1.VolumeRateModel.findByIdAndUpdate(id, {

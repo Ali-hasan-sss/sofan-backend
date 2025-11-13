@@ -29,7 +29,7 @@ const EnvSchema = zod_1.z.object({
     MONGO_URI: zod_1.z.string(),
     JWT_ACCESS_SECRET: zod_1.z.string(),
     JWT_REFRESH_SECRET: zod_1.z.string(),
-    ACCESS_TOKEN_TTL: zod_1.z.string().default("15m"),
+    ACCESS_TOKEN_TTL: zod_1.z.string().default("60m"),
     REFRESH_TOKEN_TTL: zod_1.z.string().default("7d"),
     DEFAULT_COUNTRY: zod_1.z.string().default("LB"),
     BASE_URL: zod_1.z.string().default("http://localhost:3000"),

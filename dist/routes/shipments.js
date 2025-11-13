@@ -12,5 +12,7 @@ router.use((0, auth_1.authenticate)());
 router.get("/", (0, rbac_1.requireRoles)(roles_1.ROLES.SUPER_ADMIN, roles_1.ROLES.BRANCH_ADMIN, roles_1.ROLES.EMPLOYEE, roles_1.ROLES.USER_PERSONAL, roles_1.ROLES.USER_BUSINESS), (0, asyncHandler_1.asyncHandler)(shipmentController_1.ShipmentController.list));
 router.post("/", (0, rbac_1.requireRoles)(roles_1.ROLES.SUPER_ADMIN, roles_1.ROLES.BRANCH_ADMIN, roles_1.ROLES.EMPLOYEE, roles_1.ROLES.USER_PERSONAL, roles_1.ROLES.USER_BUSINESS), (0, asyncHandler_1.asyncHandler)(shipmentController_1.ShipmentController.create));
 router.get("/:id", (0, rbac_1.requireRoles)(roles_1.ROLES.SUPER_ADMIN, roles_1.ROLES.BRANCH_ADMIN, roles_1.ROLES.EMPLOYEE, roles_1.ROLES.USER_PERSONAL, roles_1.ROLES.USER_BUSINESS), (0, asyncHandler_1.asyncHandler)(shipmentController_1.ShipmentController.getById));
+router.patch("/:id", (0, rbac_1.requireRoles)(roles_1.ROLES.SUPER_ADMIN, roles_1.ROLES.BRANCH_ADMIN, roles_1.ROLES.EMPLOYEE), (0, asyncHandler_1.asyncHandler)(shipmentController_1.ShipmentController.update));
+router.delete("/:id", (0, rbac_1.requireRoles)(roles_1.ROLES.SUPER_ADMIN, roles_1.ROLES.BRANCH_ADMIN), (0, asyncHandler_1.asyncHandler)(shipmentController_1.ShipmentController.remove));
 exports.default = router;
 //# sourceMappingURL=shipments.js.map
