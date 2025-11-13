@@ -15,6 +15,7 @@ const addressSchema = zod_1.z.object({
     villageId: zod_1.z.string().min(1).optional(),
 });
 const packageSchema = zod_1.z.object({
+    quantity: zod_1.z.number().int().positive().default(1),
     length: zod_1.z.number().positive(),
     width: zod_1.z.number().positive(),
     height: zod_1.z.number().positive(),
@@ -22,6 +23,12 @@ const packageSchema = zod_1.z.object({
     declaredValue: moneySchema,
     goodsType: zod_1.z.string().min(1),
 });
+const paymentMethodEnum = zod_1.z.enum([
+    "prepaid",
+    "cod",
+    "contract",
+    "wallet",
+]);
 exports.shipmentCreateSchema = zod_1.z.object({
     type: zod_1.z.enum([
         "door_to_door",
@@ -35,6 +42,10 @@ exports.shipmentCreateSchema = zod_1.z.object({
     sender: addressSchema,
     recipient: addressSchema,
     packages: zod_1.z.array(packageSchema).min(1),
+    paymentMethod: paymentMethodEnum,
+    isFragile: zod_1.z.boolean().default(false),
+    additionalInfo: zod_1.z.string().max(1000).optional(),
+    goodsValue: moneySchema.optional(),
     codAmount: zod_1.z.number().nonnegative().optional(),
     codCurrency: zod_1.z.string().min(2).optional(),
     insured: zod_1.z.boolean().optional(),

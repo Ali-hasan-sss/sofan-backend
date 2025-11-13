@@ -6,6 +6,7 @@ const packageDimensionsSchema = zod_1.z.object({
     length: zod_1.z.number().positive(),
     width: zod_1.z.number().positive(),
     height: zod_1.z.number().positive(),
+    quantity: zod_1.z.number().int().positive().optional(),
 });
 const shipmentTypes = [
     "door_to_door",

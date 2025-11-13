@@ -3,6 +3,7 @@ const packageDimensionsSchema = z.object({
   length: z.number().positive(),
   width: z.number().positive(),
   height: z.number().positive(),
+  quantity: z.number().int().positive().optional(),
 });
 
 const shipmentTypes = [

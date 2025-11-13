@@ -15,6 +15,7 @@ const addressSchema = z.object({
 });
 
 const packageSchema = z.object({
+  quantity: z.number().int().positive().default(1),
   length: z.number().positive(),
   width: z.number().positive(),
   height: z.number().positive(),
@@ -22,6 +23,13 @@ const packageSchema = z.object({
   declaredValue: moneySchema,
   goodsType: z.string().min(1),
 });
+
+const paymentMethodEnum = z.enum([
+  "prepaid",
+  "cod",
+  "contract",
+  "wallet",
+]);
 
 export const shipmentCreateSchema = z.object({
   type: z.enum([
@@ -36,6 +44,10 @@ export const shipmentCreateSchema = z.object({
   sender: addressSchema,
   recipient: addressSchema,
   packages: z.array(packageSchema).min(1),
+  paymentMethod: paymentMethodEnum,
+  isFragile: z.boolean().default(false),
+  additionalInfo: z.string().max(1000).optional(),
+  goodsValue: moneySchema.optional(),
   codAmount: z.number().nonnegative().optional(),
   codCurrency: z.string().min(2).optional(),
   insured: z.boolean().optional(),

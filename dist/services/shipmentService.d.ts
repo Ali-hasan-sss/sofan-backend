@@ -12,6 +12,37 @@ export declare const shipmentService: {
         pricing: mongoose.FlattenMaps<import("../models/Shipment").PricingBreakdown>;
         country: string;
         type: import("../types").ShipmentType;
+        paymentMethod: "wallet" | "prepaid" | "cod" | "contract";
+        isFragile: boolean;
+        additionalInfo: string;
+        goodsValue: mongoose.FlattenMaps<import("../types").Money> | null;
+        sender: {
+            name: string;
+            phone: string;
+            address: string;
+        };
+        recipient: {
+            name: string;
+            phone: string;
+            address: string;
+        };
+        branchFrom: {
+            id: any;
+            name: any;
+            code: any;
+        } | undefined;
+        branchTo: {
+            id: any;
+            name: any;
+            code: any;
+        } | undefined;
+        packages: {
+            quantity: number;
+            goodsType: string;
+            weight: number;
+            volumetricWeight: number;
+        }[];
+        packagesCount: number;
         createdAt: Date;
     }[]>;
     create: ({ data, createdBy, country, }: {

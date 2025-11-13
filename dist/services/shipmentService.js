@@ -33,124 +33,225 @@ exports.shipmentService = {
             pricing: shipment.pricing,
             country: shipment.country,
             type: shipment.type,
+            paymentMethod: shipment.paymentMethod,
+            isFragile: shipment.isFragile,
+            additionalInfo: shipment.additionalInfo ?? "",
+            goodsValue: shipment.goodsValue ?? null,
+            sender: {
+                name: shipment.sender.name,
+                phone: shipment.sender.phone,
+                address: shipment.sender.address,
+            },
+            recipient: {
+                name: shipment.recipient.name,
+                phone: shipment.recipient.phone,
+                address: shipment.recipient.address,
+            },
+            branchFrom: shipment.branchFrom && typeof shipment.branchFrom === "object"
+                ? "name" in shipment.branchFrom
+                    ? {
+                        id: shipment.branchFrom._id?.toString?.() ??
+                            shipment.branchFrom.id?.toString?.(),
+                        name: shipment.branchFrom.name,
+                        code: shipment.branchFrom.code,
+                    }
+                    : undefined
+                : undefined,
+            branchTo: shipment.branchTo && typeof shipment.branchTo === "object"
+                ? "name" in shipment.branchTo
+                    ? {
+                        id: shipment.branchTo._id?.toString?.() ??
+                            shipment.branchTo.id?.toString?.(),
+                        name: shipment.branchTo.name,
+                        code: shipment.branchTo.code,
+                    }
+                    : undefined
+                : undefined,
+            packages: shipment.packages?.map((pkg) => ({
+                quantity: pkg.quantity,
+                goodsType: pkg.goodsType,
+                weight: pkg.weight,
+                volumetricWeight: pkg.volumetricWeight,
+            })),
+            packagesCount: shipment.packages?.reduce((acc, pkg) => acc + (pkg.quantity ?? 1), 0),
             createdAt: shipment.createdAt,
         }));
     },
     create: async ({ data, createdBy, country, }) => {
-        const session = await mongoose_1.default.startSession();
-        try {
-            session.startTransaction();
-            const payload = shipmentSchemas_1.shipmentCreateSchema.parse(data);
-            const packages = payload.packages.map((pkg) => ({
-                ...pkg,
-                volumetricWeight: Number(((pkg.length * pkg.width * pkg.height) / 1000000).toFixed(4)),
-            }));
-            const originBranchId = payload.branchFrom;
-            const toObjectId = (value) => value ? new mongoose_1.default.Types.ObjectId(value) : undefined;
-            const senderAddress = {
-                name: payload.sender.name,
-                phone: payload.sender.phone,
-                address: payload.sender.address,
-                ...(payload.sender.provinceId
-                    ? { province: toObjectId(payload.sender.provinceId) }
-                    : {}),
-                ...(payload.sender.districtId
-                    ? { district: toObjectId(payload.sender.districtId) }
-                    : {}),
-                ...(payload.sender.villageId
-                    ? { village: toObjectId(payload.sender.villageId) }
-                    : {}),
+        const payload = shipmentSchemas_1.shipmentCreateSchema.parse(data);
+        const packages = payload.packages.map((pkg) => {
+            const quantity = pkg.quantity ?? 1;
+            const volumetricWeight = Number((quantity *
+                ((pkg.length * pkg.width * pkg.height) / 1000000)).toFixed(4));
+            return {
+                quantity,
+                length: pkg.length,
+                width: pkg.width,
+                height: pkg.height,
+                weight: pkg.weight,
+                declaredValue: {
+                    amount: pkg.declaredValue.amount,
+                    currency: pkg.declaredValue.currency.toUpperCase(),
+                },
+                goodsType: pkg.goodsType.trim(),
+                volumetricWeight,
             };
-            const recipientBranchId = payload.branchTo ??
-                (await locationService_1.locationService
-                    .findBranchForVillage(payload.recipient.villageId)
-                    .catch(() => undefined));
-            const recipientAddress = {
-                name: payload.recipient.name,
-                phone: payload.recipient.phone,
-                address: payload.recipient.address,
-                ...(payload.recipient.provinceId
-                    ? { province: toObjectId(payload.recipient.provinceId) }
-                    : {}),
-                ...(payload.recipient.districtId
-                    ? { district: toObjectId(payload.recipient.districtId) }
-                    : {}),
-                ...(payload.recipient.villageId
-                    ? { village: toObjectId(payload.recipient.villageId) }
-                    : {}),
-            };
-            const destinationBranchId = recipientBranchId ?? payload.branchTo;
-            if (!originBranchId || !destinationBranchId) {
-                const error = new Error("Unable to resolve source and destination branches for pricing");
-                error.status = 400;
-                throw error;
-            }
-            const rate = await VolumeRate_1.VolumeRateModel.findOne({
-                originBranch: originBranchId,
-                destinationBranch: destinationBranchId,
-                isActive: true,
-            }).session(session);
-            if (!rate) {
-                const error = new Error("Pricing rate not configured for the selected branches");
+        });
+        const toObjectId = (value) => value ? new mongoose_1.default.Types.ObjectId(value) : undefined;
+        const senderAddress = {
+            name: payload.sender.name,
+            phone: payload.sender.phone,
+            address: payload.sender.address,
+            ...(payload.sender.provinceId
+                ? { province: toObjectId(payload.sender.provinceId) }
+                : {}),
+            ...(payload.sender.districtId
+                ? { district: toObjectId(payload.sender.districtId) }
+                : {}),
+            ...(payload.sender.villageId
+                ? { village: toObjectId(payload.sender.villageId) }
+                : {}),
+        };
+        const recipientBranchId = payload.branchTo ??
+            (await locationService_1.locationService
+                .findBranchForVillage(payload.recipient.villageId)
+                .catch(() => undefined));
+        const recipientAddress = {
+            name: payload.recipient.name,
+            phone: payload.recipient.phone,
+            address: payload.recipient.address,
+            ...(payload.recipient.provinceId
+                ? { province: toObjectId(payload.recipient.provinceId) }
+                : {}),
+            ...(payload.recipient.districtId
+                ? { district: toObjectId(payload.recipient.districtId) }
+                : {}),
+            ...(payload.recipient.villageId
+                ? { village: toObjectId(payload.recipient.villageId) }
+                : {}),
+        };
+        const originBranchId = payload.branchFrom;
+        const destinationBranchId = recipientBranchId ?? payload.branchTo;
+        if (!originBranchId || !destinationBranchId) {
+            const error = new Error("Unable to resolve source and destination branches for pricing");
+            error.status = 400;
+            throw error;
+        }
+        const rate = await VolumeRate_1.VolumeRateModel.findOne({
+            originBranch: originBranchId,
+            destinationBranch: destinationBranchId,
+            isActive: true,
+        });
+        if (!rate) {
+            const error = new Error("Pricing rate not configured for the selected branches");
+            error.status = 404;
+            throw error;
+        }
+        const pricingCurrency = payload.pricingCurrency.toUpperCase();
+        const pricing = (0, pricing_1.calculatePricing)(rate, {
+            packages: packages.map((pkg) => ({
+                length: pkg.length,
+                width: pkg.width,
+                height: pkg.height,
+                quantity: pkg.quantity,
+            })),
+            shipmentType: payload.type,
+            currency: pricingCurrency,
+        });
+        let walletForPayment = null;
+        if (payload.paymentMethod === "wallet") {
+            walletForPayment = await Wallet_1.WalletModel.findOne({ user: createdBy });
+            if (!walletForPayment) {
+                const error = new Error("Wallet not found for this user");
                 error.status = 404;
                 throw error;
             }
-            const pricingCurrency = payload.pricingCurrency.toUpperCase();
-            const pricing = (0, pricing_1.calculatePricing)(rate, {
-                packages: packages.map((pkg) => ({
-                    length: pkg.length,
-                    width: pkg.width,
-                    height: pkg.height,
-                })),
-                shipmentType: payload.type,
-                currency: pricingCurrency,
-            });
-            const shipmentNumber = await (0, shipmentNumber_1.generateShipmentNumber)(country);
-            const shipment = await Shipment_1.ShipmentModel.create([
-                {
-                    shipmentNumber,
-                    country,
-                    type: payload.type,
-                    branchFrom: toObjectId(originBranchId),
-                    branchTo: toObjectId(destinationBranchId),
-                    createdBy,
-                    sender: senderAddress,
-                    recipient: recipientAddress,
-                    packages,
-                    pricing,
-                    codAmount: payload.codAmount,
-                    codCurrency: payload.codCurrency ?? pricing.currency,
-                },
-            ], { session });
-            if (payload.codAmount && payload.codAmount > 0) {
-                const wallet = await Wallet_1.WalletModel.findOne({ user: createdBy }).session(session);
-                if (wallet) {
-                    wallet.transactions.push({
-                        type: "hold",
-                        amount: payload.codAmount,
-                        currency: payload.codCurrency ?? pricing.currency,
-                        reference: shipmentNumber,
-                        createdAt: new Date(),
-                        meta: { reason: "COD collection" },
-                    });
-                    await wallet.save({ session });
-                }
+            if (walletForPayment.currency !== pricing.currency) {
+                const error = new Error("Wallet currency does not match shipment currency");
+                error.status = 400;
+                throw error;
             }
-            await session.commitTransaction();
-            return {
-                id: shipment[0].id.toString(),
+            if (walletForPayment.balance < pricing.total) {
+                const error = new Error("Insufficient wallet balance to cover shipment cost");
+                error.status = 400;
+                throw error;
+            }
+        }
+        const shipmentNumber = await (0, shipmentNumber_1.generateShipmentNumber)(country);
+        const normalizedCodAmount = typeof payload.codAmount === "number" && payload.codAmount > 0
+            ? payload.codAmount
+            : undefined;
+        const normalizedCodCurrency = normalizedCodAmount
+            ? (payload.codCurrency ?? pricing.currency).toUpperCase()
+            : undefined;
+        let shipmentDoc;
+        try {
+            shipmentDoc = await Shipment_1.ShipmentModel.create({
                 shipmentNumber,
-                status: shipment[0].status,
+                country,
+                type: payload.type,
+                paymentMethod: payload.paymentMethod,
+                isFragile: payload.isFragile ?? false,
+                additionalInfo: payload.additionalInfo,
+                goodsValue: payload.goodsValue
+                    ? {
+                        amount: payload.goodsValue.amount,
+                        currency: payload.goodsValue.currency.toUpperCase(),
+                    }
+                    : undefined,
+                branchFrom: toObjectId(originBranchId),
+                branchTo: toObjectId(destinationBranchId),
+                createdBy,
+                sender: senderAddress,
+                recipient: recipientAddress,
+                packages,
                 pricing,
-            };
+                codAmount: normalizedCodAmount,
+                codCurrency: normalizedCodCurrency,
+            });
         }
         catch (error) {
-            await session.abortTransaction();
             throw error;
         }
-        finally {
-            session.endSession();
+        try {
+            if (walletForPayment) {
+                walletForPayment.balance -= pricing.total;
+                walletForPayment.transactions.push({
+                    type: "debit",
+                    amount: pricing.total,
+                    currency: pricing.currency,
+                    reference: shipmentNumber,
+                    createdAt: new Date(),
+                    meta: { reason: "Shipment payment" },
+                });
+                await walletForPayment.save();
+            }
         }
+        catch (error) {
+            await Shipment_1.ShipmentModel.findByIdAndDelete(shipmentDoc._id).catch(() => undefined);
+            throw error;
+        }
+        if (normalizedCodAmount) {
+            const wallet = await Wallet_1.WalletModel.findOne({ user: createdBy });
+            if (wallet &&
+                wallet.currency === (normalizedCodCurrency ?? pricing.currency)) {
+                wallet.transactions.push({
+                    type: "hold",
+                    amount: normalizedCodAmount,
+                    currency: normalizedCodCurrency ?? pricing.currency,
+                    reference: shipmentNumber,
+                    createdAt: new Date(),
+                    meta: { reason: "COD collection" },
+                });
+                await wallet.save();
+            }
+        }
+        return {
+            id: shipmentDoc.id.toString(),
+            shipmentNumber,
+            status: shipmentDoc.status,
+            pricing,
+        };
     },
     getById: async (id) => {
         const shipment = await Shipment_1.ShipmentModel.findById(id)

@@ -12,6 +12,7 @@ export type Dimensions = {
   weight: number;
   declaredValue: Money;
   goodsType: string;
+  quantity?: number;
 };
 
 export type ShipmentType =

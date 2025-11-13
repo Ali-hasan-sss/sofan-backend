@@ -1,5 +1,5 @@
 import { Schema, model, Document, Types } from "mongoose";
-import { Dimensions, ShipmentType } from "../types";
+import { Dimensions, ShipmentType, Money } from "../types";
 
 export type ShipmentStatus =
   | "draft"
@@ -11,6 +11,7 @@ export type ShipmentStatus =
 
 export interface PackageDetails extends Dimensions {
   volumetricWeight: number;
+  quantity: number;
 }
 
 export interface PricingBreakdown {
@@ -29,6 +30,10 @@ export interface ShipmentDocument extends Document {
   shipmentNumber: string;
   country: string;
   type: ShipmentType;
+  paymentMethod: "prepaid" | "cod" | "contract" | "wallet";
+  isFragile: boolean;
+  additionalInfo?: string;
+  goodsValue?: Money;
   branchFrom?: Types.ObjectId;
   branchTo?: Types.ObjectId;
   createdBy: Types.ObjectId;
@@ -71,16 +76,22 @@ const AddressSchema = new Schema(
   { _id: false }
 );
 
+const MoneySchema = new Schema(
+  {
+    amount: { type: Number, required: true },
+    currency: { type: String, required: true },
+  },
+  { _id: false }
+);
+
 const PackageSchema = new Schema<PackageDetails>(
   {
+    quantity: { type: Number, required: true, min: 1, default: 1 },
     length: { type: Number, required: true },
     width: { type: Number, required: true },
     height: { type: Number, required: true },
     weight: { type: Number, required: true },
-    declaredValue: {
-      amount: { type: Number, required: true },
-      currency: { type: String, required: true },
-    },
+    declaredValue: { type: MoneySchema, required: true },
     goodsType: { type: String, required: true },
     volumetricWeight: { type: Number, required: true },
   },
@@ -123,6 +134,14 @@ const ShipmentSchema = new Schema<ShipmentDocument>(
     recipient: { type: AddressSchema, required: true },
     packages: { type: [PackageSchema], required: true },
     pricing: { type: PricingBreakdownSchema, required: true },
+    paymentMethod: {
+      type: String,
+      enum: ["prepaid", "cod", "contract", "wallet"],
+      required: true,
+    },
+    isFragile: { type: Boolean, default: false },
+    additionalInfo: { type: String },
+    goodsValue: { type: MoneySchema },
     codAmount: { type: Number },
     codCurrency: { type: String },
     walletTransaction: { type: Schema.Types.ObjectId, ref: "Wallet" },

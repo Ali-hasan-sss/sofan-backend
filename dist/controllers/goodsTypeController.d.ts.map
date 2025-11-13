@@ -1,0 +1,1 @@
+{"version":3,"file":"goodsTypeController.d.ts","sourceRoot":"","sources":["../../src/controllers/goodsTypeController.ts"],"names":[],"mappings":"AAAA,OAAO,EAAE,OAAO,EAAE,QAAQ,EAAE,MAAM,SAAS,CAAC;AAG5C,eAAO,MAAM,mBAAmB;iBACX,OAAO,OAAO,QAAQ;uBAKhB,OAAO,OAAO,QAAQ;kBAK3B,OAAO,OAAO,QAAQ;kBAKtB,OAAO,OAAO,QAAQ;kBAKtB,OAAO,OAAO,QAAQ;CAI3C,CAAC"}

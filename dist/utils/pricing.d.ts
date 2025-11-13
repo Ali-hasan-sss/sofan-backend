@@ -5,6 +5,7 @@ export interface VolumePricingInput {
         length: number;
         width: number;
         height: number;
+        quantity?: number;
     }>;
     shipmentType: ShipmentType;
     currency?: string;

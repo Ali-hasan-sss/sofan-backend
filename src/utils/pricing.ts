@@ -6,6 +6,7 @@ export interface VolumePricingInput {
     length: number;
     width: number;
     height: number;
+    quantity?: number;
   }>;
   shipmentType: ShipmentType;
   currency?: string;
@@ -54,7 +55,10 @@ export const calculatePricing = (
     : rate.deliveryDoorFeeLocal ?? rate.deliveryDoorFeeUsd ?? 0;
 
   const volumetricCubicMeters = input.packages.reduce((acc, pkg) => {
-    return acc + (pkg.length * pkg.width * pkg.height) / CUBIC_DIVISOR;
+    const quantity = pkg.quantity ?? 1;
+    return (
+      acc + quantity * ((pkg.length * pkg.width * pkg.height) / CUBIC_DIVISOR)
+    );
   }, 0);
 
   const volumeCharge = volumetricCubicMeters * pricePerCubicMeter;

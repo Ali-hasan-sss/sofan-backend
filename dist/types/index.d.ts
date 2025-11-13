@@ -10,6 +10,7 @@ export type Dimensions = {
     weight: number;
     declaredValue: Money;
     goodsType: string;
+    quantity?: number;
 };
 export type ShipmentType = "door_to_door" | "branch_to_branch" | "branch_to_door" | "door_to_branch";
 //# sourceMappingURL=index.d.ts.map

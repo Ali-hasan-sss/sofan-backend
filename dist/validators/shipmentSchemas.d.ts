@@ -26,6 +26,7 @@ export declare const shipmentCreateSchema: z.ZodObject<{
         villageId: z.ZodOptional<z.ZodString>;
     }, z.core.$strip>;
     packages: z.ZodArray<z.ZodObject<{
+        quantity: z.ZodDefault<z.ZodNumber>;
         length: z.ZodNumber;
         width: z.ZodNumber;
         height: z.ZodNumber;
@@ -35,6 +36,18 @@ export declare const shipmentCreateSchema: z.ZodObject<{
             currency: z.ZodString;
         }, z.core.$strip>;
         goodsType: z.ZodString;
+    }, z.core.$strip>>;
+    paymentMethod: z.ZodEnum<{
+        wallet: "wallet";
+        prepaid: "prepaid";
+        cod: "cod";
+        contract: "contract";
+    }>;
+    isFragile: z.ZodDefault<z.ZodBoolean>;
+    additionalInfo: z.ZodOptional<z.ZodString>;
+    goodsValue: z.ZodOptional<z.ZodObject<{
+        amount: z.ZodNumber;
+        currency: z.ZodString;
     }, z.core.$strip>>;
     codAmount: z.ZodOptional<z.ZodNumber>;
     codCurrency: z.ZodOptional<z.ZodString>;

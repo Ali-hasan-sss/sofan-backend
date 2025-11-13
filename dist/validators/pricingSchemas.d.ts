@@ -12,6 +12,7 @@ export declare const pricingCalcSchema: z.ZodObject<{
         length: z.ZodNumber;
         width: z.ZodNumber;
         height: z.ZodNumber;
+        quantity: z.ZodOptional<z.ZodNumber>;
     }, z.core.$strip>>;
     currency: z.ZodOptional<z.ZodString>;
 }, z.core.$strip>;

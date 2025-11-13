@@ -26,7 +26,7 @@ const EnvSchema = z.object({
   MONGO_URI: z.string(),
   JWT_ACCESS_SECRET: z.string(),
   JWT_REFRESH_SECRET: z.string(),
-  ACCESS_TOKEN_TTL: z.string().default("15m"),
+  ACCESS_TOKEN_TTL: z.string().default("60m"),
   REFRESH_TOKEN_TTL: z.string().default("7d"),
   DEFAULT_COUNTRY: z.string().default("LB"),
   BASE_URL: z.string().default("http://localhost:3000"),

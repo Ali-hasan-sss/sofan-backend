@@ -1,8 +1,9 @@
 import { Document, Types } from "mongoose";
-import { Dimensions, ShipmentType } from "../types";
+import { Dimensions, ShipmentType, Money } from "../types";
 export type ShipmentStatus = "draft" | "pending_approval" | "awaiting_pickup" | "in_transit" | "delivered" | "cancelled";
 export interface PackageDetails extends Dimensions {
     volumetricWeight: number;
+    quantity: number;
 }
 export interface PricingBreakdown {
     baseRate: number;
@@ -19,6 +20,10 @@ export interface ShipmentDocument extends Document {
     shipmentNumber: string;
     country: string;
     type: ShipmentType;
+    paymentMethod: "prepaid" | "cod" | "contract" | "wallet";
+    isFragile: boolean;
+    additionalInfo?: string;
+    goodsValue?: Money;
     branchFrom?: Types.ObjectId;
     branchTo?: Types.ObjectId;
     createdBy: Types.ObjectId;
