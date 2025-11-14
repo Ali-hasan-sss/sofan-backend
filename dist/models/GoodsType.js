@@ -4,7 +4,6 @@ exports.GoodsTypeModel = void 0;
 const mongoose_1 = require("mongoose");
 const GoodsTypeSchema = new mongoose_1.Schema({
     name: { type: String, required: true, unique: true, trim: true },
-    description: { type: String, trim: true },
     isActive: { type: Boolean, default: true },
 }, { timestamps: true });
 GoodsTypeSchema.index({ name: 1 }, { unique: true });

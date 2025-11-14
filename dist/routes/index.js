@@ -15,6 +15,8 @@ const invoices_1 = __importDefault(require("./invoices"));
 const admin_1 = __importDefault(require("./admin"));
 const locations_1 = __importDefault(require("./locations"));
 const staff_1 = __importDefault(require("./staff"));
+const settings_1 = __importDefault(require("./settings"));
+const countries_1 = __importDefault(require("./countries"));
 const router = (0, express_1.Router)();
 router.use("/auth", auth_1.default);
 router.use("/users", users_1.default);
@@ -27,5 +29,7 @@ router.use("/invoices", invoices_1.default);
 router.use("/admin", admin_1.default);
 router.use("/locations", locations_1.default);
 router.use("/staff", staff_1.default);
+router.use("/settings", settings_1.default);
+router.use("/countries", countries_1.default);
 exports.default = router;
 //# sourceMappingURL=index.js.map

@@ -2,7 +2,6 @@ import { Schema, model, type Document } from "mongoose";
 
 export interface GoodsTypeDocument extends Document {
   name: string;
-  description?: string;
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -11,7 +10,6 @@ export interface GoodsTypeDocument extends Document {
 const GoodsTypeSchema = new Schema<GoodsTypeDocument>(
   {
     name: { type: String, required: true, unique: true, trim: true },
-    description: { type: String, trim: true },
     isActive: { type: Boolean, default: true },
   },
   { timestamps: true }

@@ -26,6 +26,14 @@ exports.shipmentService = {
             .populate("branchFrom", "name code")
             .populate("branchTo", "name code")
             .lean();
+        const mapAddress = (address) => ({
+            name: address.name,
+            phone: address.phone,
+            address: address.address,
+            provinceId: address.province ? address.province.toString() : undefined,
+            districtId: address.district ? address.district.toString() : undefined,
+            villageId: address.village ? address.village.toString() : undefined,
+        });
         return shipments.map((shipment) => ({
             id: shipment._id.toString(),
             shipmentNumber: shipment.shipmentNumber,
@@ -37,16 +45,8 @@ exports.shipmentService = {
             isFragile: shipment.isFragile,
             additionalInfo: shipment.additionalInfo ?? "",
             goodsValue: shipment.goodsValue ?? null,
-            sender: {
-                name: shipment.sender.name,
-                phone: shipment.sender.phone,
-                address: shipment.sender.address,
-            },
-            recipient: {
-                name: shipment.recipient.name,
-                phone: shipment.recipient.phone,
-                address: shipment.recipient.address,
-            },
+            sender: mapAddress(shipment.sender),
+            recipient: mapAddress(shipment.recipient),
             branchFrom: shipment.branchFrom && typeof shipment.branchFrom === "object"
                 ? "name" in shipment.branchFrom
                     ? {

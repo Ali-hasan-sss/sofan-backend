@@ -20,11 +20,17 @@ export declare const shipmentService: {
             name: string;
             phone: string;
             address: string;
+            provinceId: any;
+            districtId: any;
+            villageId: any;
         };
         recipient: {
             name: string;
             phone: string;
             address: string;
+            provinceId: any;
+            districtId: any;
+            villageId: any;
         };
         branchFrom: {
             id: any;

@@ -13,7 +13,6 @@ const httpError = (message: string, status: number) => {
 const mapGoodsType = (doc: any) => ({
   id: doc._id.toString(),
   name: doc.name,
-  description: doc.description ?? "",
   isActive: doc.isActive ?? true,
   createdAt: doc.createdAt,
   updatedAt: doc.updatedAt,
@@ -44,7 +43,6 @@ export const goodsTypeService = {
 
     const goodsType = await GoodsTypeModel.create({
       name: data.name.trim(),
-      description: data.description,
       isActive: data.isActive ?? true,
     });
 
@@ -69,9 +67,6 @@ export const goodsTypeService = {
       {
         $set: {
           ...(data.name !== undefined ? { name: data.name.trim() } : {}),
-          ...(data.description !== undefined
-            ? { description: data.description }
-            : {}),
           ...(data.isActive !== undefined ? { isActive: data.isActive } : {}),
         },
       },

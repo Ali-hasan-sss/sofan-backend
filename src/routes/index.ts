@@ -10,6 +10,8 @@ import invoiceRouter from "./invoices";
 import adminRouter from "./admin";
 import locationsRouter from "./locations";
 import staffRouter from "./staff";
+import settingsRouter from "./settings";
+import countriesRouter from "./countries";
 
 const router = Router();
 
@@ -24,5 +26,7 @@ router.use("/invoices", invoiceRouter);
 router.use("/admin", adminRouter);
 router.use("/locations", locationsRouter);
 router.use("/staff", staffRouter);
+router.use("/settings", settingsRouter);
+router.use("/countries", countriesRouter);
 
 export default router;

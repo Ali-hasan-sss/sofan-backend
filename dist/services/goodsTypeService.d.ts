@@ -2,7 +2,6 @@ export declare const goodsTypeService: {
     list: () => Promise<{
         id: any;
         name: any;
-        description: any;
         isActive: any;
         createdAt: any;
         updatedAt: any;
@@ -10,7 +9,6 @@ export declare const goodsTypeService: {
     listActive: () => Promise<{
         id: any;
         name: any;
-        description: any;
         isActive: any;
         createdAt: any;
         updatedAt: any;
@@ -18,7 +16,6 @@ export declare const goodsTypeService: {
     create: (payload: unknown) => Promise<{
         id: any;
         name: any;
-        description: any;
         isActive: any;
         createdAt: any;
         updatedAt: any;
@@ -26,7 +23,6 @@ export declare const goodsTypeService: {
     update: (id: string, payload: unknown) => Promise<{
         id: any;
         name: any;
-        description: any;
         isActive: any;
         createdAt: any;
         updatedAt: any;

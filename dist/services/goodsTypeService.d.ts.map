@@ -1,1 +1,1 @@
-{"version":3,"file":"goodsTypeService.d.ts","sourceRoot":"","sources":["../../src/services/goodsTypeService.ts"],"names":[],"mappings":"AAqBA,eAAO,MAAM,gBAAgB;;;;;;;;;;;;;;;;;sBAaH,OAAO;;;;;;;;iBAmBZ,MAAM,WAAW,OAAO;;;;;;;;iBAkCxB,MAAM;;;;CAO1B,CAAC"}
+{"version":3,"file":"goodsTypeService.d.ts","sourceRoot":"","sources":["../../src/services/goodsTypeService.ts"],"names":[],"mappings":"AAoBA,eAAO,MAAM,gBAAgB;;;;;;;;;;;;;;;sBAaH,OAAO;;;;;;;iBAkBZ,MAAM,WAAW,OAAO;;;;;;;iBA+BxB,MAAM;;;;CAO1B,CAAC"}
