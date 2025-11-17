@@ -10,6 +10,7 @@ export interface UserDocument extends Document {
     role: Role;
     locale: "ar" | "en";
     country: string;
+    shippingCode?: string;
     branch?: Types.ObjectId;
     status: UserStatus;
     businessName?: string;

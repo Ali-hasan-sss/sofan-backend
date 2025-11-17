@@ -39,6 +39,10 @@ exports.UserController = {
         const result = await userService_1.userService.setActiveState(req.params.id, true);
         res.json(result);
     },
+    update: async (req, res) => {
+        const result = await userService_1.userService.update(req.params.id, req.body);
+        res.json(result);
+    },
     remove: async (req, res) => {
         const result = await userService_1.userService.deleteUser(req.params.id);
         res.json(result);

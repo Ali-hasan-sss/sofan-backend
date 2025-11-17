@@ -12,6 +12,7 @@ export interface UserDocument extends Document {
   role: Role;
   locale: "ar" | "en";
   country: string;
+  shippingCode?: string;
   branch?: Types.ObjectId;
   status: UserStatus;
   businessName?: string;
@@ -47,6 +48,13 @@ const UserSchema = new Schema<UserDocument>(
     },
     locale: { type: String, enum: ["ar", "en"], default: "en" },
     country: { type: String, required: true },
+    shippingCode: {
+      type: String,
+      unique: true,
+      sparse: true,
+      uppercase: true,
+      trim: true,
+    },
     branch: { type: Schema.Types.ObjectId, ref: "Branch" },
     status: {
       type: String,
@@ -61,5 +69,6 @@ const UserSchema = new Schema<UserDocument>(
 );
 
 UserSchema.index({ country: 1, branch: 1 });
+UserSchema.index({ shippingCode: 1 });
 
 export const UserModel = model<UserDocument>("User", UserSchema);

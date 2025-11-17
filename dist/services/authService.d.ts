@@ -18,6 +18,7 @@ export declare const authService: {
         role: import("../types/roles").Role;
         status: import("../models/User").UserStatus;
         country: string;
+        shippingCode: string | undefined;
         branch: import("mongoose").Types.ObjectId | undefined;
         locale: "ar" | "en";
         isActive: boolean;
@@ -30,6 +31,7 @@ export declare const authService: {
         role: import("../types/roles").Role;
         status: import("../models/User").UserStatus;
         country: string;
+        shippingCode: string | undefined;
         branch: import("mongoose").Types.ObjectId | undefined;
         locale: "ar" | "en";
         isActive: boolean;
@@ -45,6 +47,7 @@ export declare const authService: {
             role: import("../types/roles").Role;
             status: import("../models/User").UserStatus;
             country: string;
+            shippingCode: string | undefined;
             branch: import("mongoose").Types.ObjectId | undefined;
             locale: "ar" | "en";
             isActive: boolean;

@@ -8,6 +8,7 @@ export declare const UserController: {
     reject: (req: Request, res: Response) => Promise<void>;
     disable: (req: Request, res: Response) => Promise<void>;
     activate: (req: Request, res: Response) => Promise<void>;
+    update: (req: Request, res: Response) => Promise<void>;
     remove: (req: Request, res: Response) => Promise<void>;
 };
 //# sourceMappingURL=userController.d.ts.map

@@ -1,3 +1,4 @@
+import { type Role } from "../types/roles";
 export declare const userService: {
     createByAdmin: (payload: unknown) => Promise<{
         user: {
@@ -8,6 +9,7 @@ export declare const userService: {
             role: any;
             status: any;
             country: any;
+            shippingCode: any;
             branch: any;
             isActive: any;
             createdAt: any;
@@ -19,7 +21,7 @@ export declare const userService: {
         email: string;
         firstName: string;
         lastName: string;
-        role: import("../types/roles").Role;
+        role: Role;
     }[]>;
     list: ({ status, role, search, }: {
         status?: string;
@@ -30,9 +32,10 @@ export declare const userService: {
         email: string;
         firstName: string;
         lastName: string;
-        role: import("../types/roles").Role;
+        role: Role;
         status: import("../models/User").UserStatus;
         country: string;
+        shippingCode: string | undefined;
         createdAt: Date;
         isActive: boolean;
     }[]>;
@@ -41,8 +44,9 @@ export declare const userService: {
         email: string;
         firstName: string;
         lastName: string;
-        role: import("../types/roles").Role;
+        role: Role;
         country: string;
+        shippingCode: string | undefined;
         isActive: boolean;
     }[]>;
     updateStatus: (userId: string, status: "approved" | "rejected", approvedBy?: string) => Promise<{
@@ -54,6 +58,7 @@ export declare const userService: {
             role: any;
             status: any;
             country: any;
+            shippingCode: any;
             branch: any;
             isActive: any;
             createdAt: any;
@@ -68,6 +73,20 @@ export declare const userService: {
         role: any;
         status: any;
         country: any;
+        shippingCode: any;
+        branch: any;
+        isActive: any;
+        createdAt: any;
+    }>;
+    update: (userId: string, payload: unknown) => Promise<{
+        id: any;
+        email: any;
+        firstName: any;
+        lastName: any;
+        role: any;
+        status: any;
+        country: any;
+        shippingCode: any;
         branch: any;
         isActive: any;
         createdAt: any;

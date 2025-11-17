@@ -54,6 +54,11 @@ export const UserController = {
     res.json(result);
   },
 
+  update: async (req: Request, res: Response) => {
+    const result = await userService.update(req.params.id, req.body);
+    res.json(result);
+  },
+
   remove: async (req: Request, res: Response) => {
     const result = await userService.deleteUser(req.params.id);
     res.json(result);

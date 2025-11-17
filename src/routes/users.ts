@@ -27,6 +27,12 @@ router.post(
   asyncHandler(UserController.create)
 );
 
+router.patch(
+  "/:id",
+  requireRoles(ROLES.SUPER_ADMIN),
+  asyncHandler(UserController.update)
+);
+
 router.get(
   "/pending",
   requireRoles(ROLES.SUPER_ADMIN, ROLES.BRANCH_ADMIN),

@@ -3,9 +3,13 @@ import { Types } from "mongoose";
 import { UserModel } from "../models/User";
 import { WalletModel } from "../models/Wallet";
 import { env } from "../config/env";
-import { ROLES } from "../types/roles";
+import { ROLES, type Role } from "../types/roles";
 import bcrypt from "bcryptjs";
-import { adminCreateUserSchema } from "../validators/userSchemas";
+import {
+  adminCreateUserSchema,
+  adminUpdateUserSchema,
+} from "../validators/userSchemas";
+import { generateUserShippingCode } from "../utils/userShippingCode";
 
 const mapUser = (user: typeof UserModel.prototype) => ({
   id: user._id.toString(),
@@ -15,6 +19,7 @@ const mapUser = (user: typeof UserModel.prototype) => ({
   role: user.role,
   status: user.status,
   country: user.country,
+  shippingCode: user.shippingCode,
   branch: user.branch,
   isActive: user.isActive,
   createdAt: user.createdAt,
@@ -38,6 +43,9 @@ export const userService = {
         .toUpperCase()}`;
     const passwordHash = await bcrypt.hash(generatedPassword, 10);
 
+    const userCountry = data.country ?? env.DEFAULT_COUNTRY;
+    const shippingCode = await generateUserShippingCode(userCountry);
+
     const user = await UserModel.create({
       email: data.email,
       passwordHash,
@@ -47,7 +55,8 @@ export const userService = {
       status: "approved",
       isActive: true,
       locale: "en",
-      country: data.country ?? env.DEFAULT_COUNTRY,
+      country: userCountry,
+      shippingCode,
     });
 
     if (
@@ -115,6 +124,7 @@ export const userService = {
       role: user.role,
       status: user.status,
       country: user.country,
+      shippingCode: user.shippingCode,
       createdAt: user.createdAt,
       isActive: user.isActive ?? true,
     }));
@@ -131,6 +141,7 @@ export const userService = {
       lastName: user.lastName,
       role: user.role,
       country: user.country,
+      shippingCode: user.shippingCode,
       isActive: user.isActive ?? true,
     }));
   },
@@ -178,6 +189,55 @@ export const userService = {
     }
 
     user.isActive = isActive;
+    await user.save();
+
+    return mapUser(user);
+  },
+
+  update: async (userId: string, payload: unknown) => {
+    const data = adminUpdateUserSchema.parse(payload);
+
+    const user = await UserModel.findById(userId);
+    if (!user) {
+      const error = new Error("User not found");
+      (error as Error & { status?: number }).status = 404;
+      throw error;
+    }
+
+    if (user.role === ROLES.SUPER_ADMIN) {
+      const error = new Error("Cannot modify super admin");
+      (error as Error & { status?: number }).status = 400;
+      throw error;
+    }
+
+    // Check if email is being changed and if it's already taken
+    if (data.email && data.email !== user.email) {
+      const existing = await UserModel.findOne({ email: data.email });
+      if (existing) {
+        const error = new Error("Email already registered");
+        (error as Error & { status?: number }).status = 409;
+        throw error;
+      }
+      user.email = data.email;
+    }
+
+    if (data.firstName) {
+      user.firstName = data.firstName;
+    }
+    if (data.lastName) {
+      user.lastName = data.lastName;
+    }
+    if (data.role) {
+      user.role = data.role as Role;
+    }
+    if (data.country !== undefined) {
+      user.country = data.country;
+    }
+    if (data.password) {
+      const passwordHash = await bcrypt.hash(data.password, 10);
+      user.passwordHash = passwordHash;
+    }
+
     await user.save();
 
     return mapUser(user);

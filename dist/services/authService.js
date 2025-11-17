@@ -14,6 +14,7 @@ const roles_1 = require("../types/roles");
 const env_1 = require("../config/env");
 const EmailVerification_1 = require("../models/EmailVerification");
 const StaffProfile_1 = require("../models/StaffProfile");
+const userShippingCode_1 = require("../utils/userShippingCode");
 const SALT_ROUNDS = 10;
 const OTP_CODE = "0000";
 const OTP_TTL_MS = 10 * 60 * 1000;
@@ -30,6 +31,7 @@ const mapUser = (user) => ({
     role: user.role,
     status: user.status,
     country: user.country,
+    shippingCode: user.shippingCode,
     branch: user.branch,
     locale: user.locale,
     isActive: user.isActive,
@@ -121,6 +123,8 @@ exports.authService = {
             throw httpError("Email not verified", 400);
         }
         const passwordHash = await bcryptjs_1.default.hash(data.password, SALT_ROUNDS);
+        const userCountry = data.country ?? env_1.env.DEFAULT_COUNTRY;
+        const shippingCode = await (0, userShippingCode_1.generateUserShippingCode)(userCountry);
         const user = (await User_1.UserModel.create({
             email: data.email,
             passwordHash,
@@ -128,7 +132,8 @@ exports.authService = {
             lastName: data.lastName,
             role: data.role,
             locale: data.locale,
-            country: data.country ?? env_1.env.DEFAULT_COUNTRY,
+            country: userCountry,
+            shippingCode,
             status: "pending",
             isActive: true,
         }));

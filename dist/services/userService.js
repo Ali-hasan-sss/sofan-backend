@@ -11,6 +11,7 @@ const env_1 = require("../config/env");
 const roles_1 = require("../types/roles");
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const userSchemas_1 = require("../validators/userSchemas");
+const userShippingCode_1 = require("../utils/userShippingCode");
 const mapUser = (user) => ({
     id: user._id.toString(),
     email: user.email,
@@ -19,6 +20,7 @@ const mapUser = (user) => ({
     role: user.role,
     status: user.status,
     country: user.country,
+    shippingCode: user.shippingCode,
     branch: user.branch,
     isActive: user.isActive,
     createdAt: user.createdAt,
@@ -37,6 +39,8 @@ exports.userService = {
                 .toString("hex")
                 .toUpperCase()}`;
         const passwordHash = await bcryptjs_1.default.hash(generatedPassword, 10);
+        const userCountry = data.country ?? env_1.env.DEFAULT_COUNTRY;
+        const shippingCode = await (0, userShippingCode_1.generateUserShippingCode)(userCountry);
         const user = await User_1.UserModel.create({
             email: data.email,
             passwordHash,
@@ -46,7 +50,8 @@ exports.userService = {
             status: "approved",
             isActive: true,
             locale: "en",
-            country: data.country ?? env_1.env.DEFAULT_COUNTRY,
+            country: userCountry,
+            shippingCode,
         });
         if (user.role === roles_1.ROLES.USER_BUSINESS ||
             user.role === roles_1.ROLES.USER_PERSONAL) {
@@ -97,6 +102,7 @@ exports.userService = {
             role: user.role,
             status: user.status,
             country: user.country,
+            shippingCode: user.shippingCode,
             createdAt: user.createdAt,
             isActive: user.isActive ?? true,
         }));
@@ -113,6 +119,7 @@ exports.userService = {
             lastName: user.lastName,
             role: user.role,
             country: user.country,
+            shippingCode: user.shippingCode,
             isActive: user.isActive ?? true,
         }));
     },
@@ -149,6 +156,48 @@ exports.userService = {
             throw error;
         }
         user.isActive = isActive;
+        await user.save();
+        return mapUser(user);
+    },
+    update: async (userId, payload) => {
+        const data = userSchemas_1.adminUpdateUserSchema.parse(payload);
+        const user = await User_1.UserModel.findById(userId);
+        if (!user) {
+            const error = new Error("User not found");
+            error.status = 404;
+            throw error;
+        }
+        if (user.role === roles_1.ROLES.SUPER_ADMIN) {
+            const error = new Error("Cannot modify super admin");
+            error.status = 400;
+            throw error;
+        }
+        // Check if email is being changed and if it's already taken
+        if (data.email && data.email !== user.email) {
+            const existing = await User_1.UserModel.findOne({ email: data.email });
+            if (existing) {
+                const error = new Error("Email already registered");
+                error.status = 409;
+                throw error;
+            }
+            user.email = data.email;
+        }
+        if (data.firstName) {
+            user.firstName = data.firstName;
+        }
+        if (data.lastName) {
+            user.lastName = data.lastName;
+        }
+        if (data.role) {
+            user.role = data.role;
+        }
+        if (data.country !== undefined) {
+            user.country = data.country;
+        }
+        if (data.password) {
+            const passwordHash = await bcryptjs_1.default.hash(data.password, 10);
+            user.passwordHash = passwordHash;
+        }
         await user.save();
         return mapUser(user);
     },

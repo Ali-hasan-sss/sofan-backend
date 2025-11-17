@@ -19,6 +19,7 @@ import { ROLES } from "../types/roles";
 import { env } from "../config/env";
 import { EmailVerificationModel } from "../models/EmailVerification";
 import { StaffProfileModel } from "../models/StaffProfile";
+import { generateUserShippingCode } from "../utils/userShippingCode";
 
 const SALT_ROUNDS = 10;
 const OTP_CODE = "0000";
@@ -38,6 +39,7 @@ const mapUser = (user: UserDocument) => ({
   role: user.role,
   status: user.status,
   country: user.country,
+  shippingCode: user.shippingCode,
   branch: user.branch,
   locale: user.locale,
   isActive: user.isActive,
@@ -157,6 +159,9 @@ export const authService = {
     }
 
     const passwordHash = await bcrypt.hash(data.password, SALT_ROUNDS);
+    const userCountry = data.country ?? env.DEFAULT_COUNTRY;
+    const shippingCode = await generateUserShippingCode(userCountry);
+
     const user = (await UserModel.create({
       email: data.email,
       passwordHash,
@@ -164,7 +169,8 @@ export const authService = {
       lastName: data.lastName,
       role: data.role,
       locale: data.locale,
-      country: data.country ?? env.DEFAULT_COUNTRY,
+      country: userCountry,
+      shippingCode,
       status: "pending",
       isActive: true,
     })) as UserDocument;

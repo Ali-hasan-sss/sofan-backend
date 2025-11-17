@@ -27,6 +27,13 @@ const UserSchema = new mongoose_1.Schema({
     },
     locale: { type: String, enum: ["ar", "en"], default: "en" },
     country: { type: String, required: true },
+    shippingCode: {
+        type: String,
+        unique: true,
+        sparse: true,
+        uppercase: true,
+        trim: true,
+    },
     branch: { type: mongoose_1.Schema.Types.ObjectId, ref: "Branch" },
     status: {
         type: String,
@@ -38,5 +45,6 @@ const UserSchema = new mongoose_1.Schema({
     isActive: { type: Boolean, default: true },
 }, { timestamps: true });
 UserSchema.index({ country: 1, branch: 1 });
+UserSchema.index({ shippingCode: 1 });
 exports.UserModel = (0, mongoose_1.model)("User", UserSchema);
 //# sourceMappingURL=User.js.map
