@@ -29,7 +29,6 @@ const EmailVerificationSchema = new Schema<EmailVerificationDocument>(
   }
 );
 
-EmailVerificationSchema.index({ email: 1 }, { unique: true });
 EmailVerificationSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
 export const EmailVerificationModel = model<EmailVerificationDocument>(

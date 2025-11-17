@@ -45,6 +45,5 @@ const UserSchema = new mongoose_1.Schema({
     isActive: { type: Boolean, default: true },
 }, { timestamps: true });
 UserSchema.index({ country: 1, branch: 1 });
-UserSchema.index({ shippingCode: 1 });
 exports.UserModel = (0, mongoose_1.model)("User", UserSchema);
 //# sourceMappingURL=User.js.map

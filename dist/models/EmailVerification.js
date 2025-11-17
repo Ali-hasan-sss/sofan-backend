@@ -17,7 +17,6 @@ const EmailVerificationSchema = new mongoose_1.Schema({
 }, {
     timestamps: true,
 });
-EmailVerificationSchema.index({ email: 1 }, { unique: true });
 EmailVerificationSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 exports.EmailVerificationModel = (0, mongoose_1.model)("EmailVerification", EmailVerificationSchema);
 //# sourceMappingURL=EmailVerification.js.map

@@ -69,6 +69,5 @@ const UserSchema = new Schema<UserDocument>(
 );
 
 UserSchema.index({ country: 1, branch: 1 });
-UserSchema.index({ shippingCode: 1 });
 
 export const UserModel = model<UserDocument>("User", UserSchema);

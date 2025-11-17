@@ -15,8 +15,6 @@ const GoodsTypeSchema = new Schema<GoodsTypeDocument>(
   { timestamps: true }
 );
 
-GoodsTypeSchema.index({ name: 1 }, { unique: true });
-
 export const GoodsTypeModel = model<GoodsTypeDocument>(
   "GoodsType",
   GoodsTypeSchema
