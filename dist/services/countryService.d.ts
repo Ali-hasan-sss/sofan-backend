@@ -3,6 +3,8 @@ export declare const countryService: {
         id: string;
         name: string;
         code: string;
+        phoneCode: string | undefined;
+        iso3: string | undefined;
         createdAt: Date;
         updatedAt: Date;
     }[]>;
@@ -10,6 +12,8 @@ export declare const countryService: {
         id: string;
         name: string;
         code: string;
+        phoneCode: string | undefined;
+        iso3: string | undefined;
         createdAt: Date;
         updatedAt: Date;
     }>;
@@ -17,6 +21,8 @@ export declare const countryService: {
         id: string;
         name: string;
         code: string;
+        phoneCode: string | undefined;
+        iso3: string | undefined;
         createdAt: Date;
         updatedAt: Date;
     }>;

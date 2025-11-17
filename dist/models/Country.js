@@ -11,6 +11,8 @@ const CountrySchema = new mongoose_1.Schema({
         uppercase: true,
         unique: true,
     },
+    phoneCode: { type: String, trim: true },
+    iso3: { type: String, trim: true, uppercase: true },
 }, { timestamps: true });
 exports.CountryModel = (0, mongoose_1.model)("Country", CountrySchema);
 //# sourceMappingURL=Country.js.map

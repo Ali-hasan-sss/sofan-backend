@@ -3,6 +3,8 @@ import { Schema, model, Document } from "mongoose";
 export interface CountryDocument extends Document {
   name: string;
   code: string;
+  phoneCode?: string;
+  iso3?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -17,6 +19,8 @@ const CountrySchema = new Schema<CountryDocument>(
       uppercase: true,
       unique: true,
     },
+    phoneCode: { type: String, trim: true },
+    iso3: { type: String, trim: true, uppercase: true },
   },
   { timestamps: true }
 );

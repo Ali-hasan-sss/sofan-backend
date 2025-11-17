@@ -10,6 +10,8 @@ const mapCountry = (doc: CountryDocument) => ({
   id: (doc._id as Types.ObjectId).toString(),
   name: doc.name,
   code: doc.code,
+  phoneCode: doc.phoneCode,
+  iso3: doc.iso3,
   createdAt: doc.createdAt,
   updatedAt: doc.updatedAt,
 });
@@ -25,6 +27,8 @@ export const countryService = {
     const country = await CountryModel.create({
       name: data.name.trim(),
       code: data.code.trim().toUpperCase(),
+      phoneCode: data.phoneCode?.trim(),
+      iso3: data.iso3?.trim().toUpperCase(),
     });
     return mapCountry(country);
   },
@@ -41,6 +45,12 @@ export const countryService = {
     }
     if (data.code !== undefined) {
       country.code = data.code.trim().toUpperCase();
+    }
+    if (data.phoneCode !== undefined) {
+      country.phoneCode = data.phoneCode?.trim() || undefined;
+    }
+    if (data.iso3 !== undefined) {
+      country.iso3 = data.iso3?.trim().toUpperCase() || undefined;
     }
 
     await country.save();
