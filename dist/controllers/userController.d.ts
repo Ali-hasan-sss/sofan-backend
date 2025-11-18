@@ -10,5 +10,9 @@ export declare const UserController: {
     activate: (req: Request, res: Response) => Promise<void>;
     update: (req: Request, res: Response) => Promise<void>;
     remove: (req: Request, res: Response) => Promise<void>;
+    updateProfile: (req: Request, res: Response) => Promise<void>;
+    changePassword: (req: Request, res: Response) => Promise<void>;
+    getDashboardOverview: (req: Request, res: Response) => Promise<void>;
+    deleteMyAccount: (req: Request, res: Response) => Promise<Response<any, Record<string, any>> | undefined>;
 };
 //# sourceMappingURL=userController.d.ts.map

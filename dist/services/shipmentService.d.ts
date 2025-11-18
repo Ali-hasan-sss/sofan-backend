@@ -3,6 +3,7 @@ type ListParams = {
     country?: string;
     branch?: string;
     status?: string;
+    createdBy?: string;
 };
 export declare const shipmentService: {
     list: (filters: ListParams) => Promise<{
@@ -123,6 +124,7 @@ export declare const shipmentService: {
             approvedBy: mongoose.Types.ObjectId;
             approvedAt: Date;
         }>[];
+        createdBy: string;
         createdAt: Date;
         updatedAt: Date;
     }>;

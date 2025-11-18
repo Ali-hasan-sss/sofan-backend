@@ -4,7 +4,35 @@ import { walletService } from "../services/walletService";
 export const WalletController = {
   getMyWallet: async (req: Request, res: Response) => {
     const wallet = await walletService.getByUser(req.user?.id as string);
-    res.json(wallet);
+
+    // Convert to both currencies
+    let balance = { local: 0, usd: 0 };
+    if (wallet.balance !== undefined) {
+      if (wallet.currency === "USD") {
+        balance.usd = wallet.balance;
+        balance.local = wallet.balance * 3.75; // Example conversion rate
+      } else {
+        balance.local = wallet.balance;
+        balance.usd = wallet.balance / 3.75; // Example conversion rate
+      }
+    }
+
+    // Format transactions
+    const transactions = (wallet.transactions || []).map((tx: any) => ({
+      id: tx._id?.toString() || Math.random().toString(36).substr(2, 9),
+      type: tx.type,
+      amount: tx.amount,
+      currency: tx.currency,
+      description: tx.reference || `${tx.type} transaction`,
+      createdAt: tx.createdAt || new Date(),
+      meta: tx.meta || {},
+    }));
+
+    res.json({
+      balance,
+      localCurrency: wallet.currency === "USD" ? "SAR" : wallet.currency,
+      transactions,
+    });
   },
 
   getByUser: async (req: Request, res: Response) => {

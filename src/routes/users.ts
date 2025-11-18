@@ -69,4 +69,41 @@ router.delete(
   asyncHandler(UserController.remove)
 );
 
+// User dashboard routes
+router.get(
+  "/dashboard/overview",
+  requireRoles(ROLES.USER_PERSONAL, ROLES.USER_BUSINESS),
+  asyncHandler(UserController.getDashboardOverview)
+);
+
+router.put(
+  "/profile",
+  requireRoles(ROLES.USER_PERSONAL, ROLES.USER_BUSINESS),
+  asyncHandler(UserController.updateProfile)
+);
+
+router.put(
+  "/password",
+  requireRoles(ROLES.USER_PERSONAL, ROLES.USER_BUSINESS),
+  asyncHandler(UserController.changePassword)
+);
+
+// Alias for wallet endpoint
+router.get(
+  "/wallet",
+  requireRoles(ROLES.USER_PERSONAL, ROLES.USER_BUSINESS),
+  asyncHandler(async (req, res) => {
+    const { WalletController } = await import(
+      "../controllers/walletController"
+    );
+    await WalletController.getMyWallet(req, res);
+  })
+);
+
+router.post(
+  "/account/delete",
+  requireRoles(ROLES.USER_PERSONAL, ROLES.USER_BUSINESS),
+  asyncHandler(UserController.deleteMyAccount)
+);
+
 export default router;

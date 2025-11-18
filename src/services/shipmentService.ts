@@ -14,6 +14,7 @@ type ListParams = {
   country?: string;
   branch?: string;
   status?: string;
+  createdBy?: string;
 };
 
 export const shipmentService = {
@@ -24,6 +25,7 @@ export const shipmentService = {
     if (filter.branch)
       query.$or = [{ branchFrom: filter.branch }, { branchTo: filter.branch }];
     if (filter.status) query.status = filter.status;
+    if (filters.createdBy) query.createdBy = filters.createdBy;
 
     const shipments = await ShipmentModel.find(query)
       .populate("branchFrom", "name code")
@@ -686,6 +688,7 @@ export const shipmentService = {
       codAmount: shipment.codAmount ?? null,
       codCurrency: shipment.codCurrency ?? null,
       approvals: shipment.approvals,
+      createdBy: shipment.createdBy?.toString() ?? undefined,
       createdAt: shipment.createdAt,
       updatedAt: shipment.updatedAt,
     };

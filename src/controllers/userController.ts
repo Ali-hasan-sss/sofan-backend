@@ -63,4 +63,41 @@ export const UserController = {
     const result = await userService.deleteUser(req.params.id);
     res.json(result);
   },
+
+  updateProfile: async (req: Request, res: Response) => {
+    const result = await userService.updateProfile(
+      req.user?.id as string,
+      req.body
+    );
+    res.json(result);
+  },
+
+  changePassword: async (req: Request, res: Response) => {
+    const { currentPassword, newPassword } = req.body;
+    const result = await userService.changePassword(
+      req.user?.id as string,
+      currentPassword,
+      newPassword
+    );
+    res.json(result);
+  },
+
+  getDashboardOverview: async (req: Request, res: Response) => {
+    const result = await userService.getDashboardOverview(
+      req.user?.id as string
+    );
+    res.json(result);
+  },
+
+  deleteMyAccount: async (req: Request, res: Response) => {
+    const { password } = req.body;
+    if (!password) {
+      return res.status(400).json({ message: "Password is required" });
+    }
+    const result = await userService.deleteMyAccount(
+      req.user?.id as string,
+      password
+    );
+    res.json(result);
+  },
 };

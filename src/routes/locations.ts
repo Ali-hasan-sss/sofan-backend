@@ -7,13 +7,10 @@ import { asyncHandler } from "../middlewares/asyncHandler";
 
 const router = Router();
 
-router.use(authenticate());
+// Public route - available to everyone
+router.get("/tree", asyncHandler(LocationController.hierarchy));
 
-router.get(
-  "/tree",
-  requireRoles(ROLES.SUPER_ADMIN, ROLES.BRANCH_ADMIN),
-  asyncHandler(LocationController.hierarchy)
-);
+router.use(authenticate());
 
 router.post(
   "/provinces",

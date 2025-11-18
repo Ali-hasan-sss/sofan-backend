@@ -7,6 +7,7 @@ exports.userService = void 0;
 const crypto_1 = require("crypto");
 const User_1 = require("../models/User");
 const Wallet_1 = require("../models/Wallet");
+const Shipment_1 = require("../models/Shipment");
 const env_1 = require("../config/env");
 const roles_1 = require("../types/roles");
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
@@ -218,6 +219,120 @@ exports.userService = {
         }
         await User_1.UserModel.findByIdAndDelete(userId);
         return { id: userId };
+    },
+    updateProfile: async (userId, payload) => {
+        const user = await User_1.UserModel.findById(userId);
+        if (!user) {
+            const error = new Error("User not found");
+            error.status = 404;
+            throw error;
+        }
+        // Check if email is being changed and if it's already taken
+        if (payload.email && payload.email !== user.email) {
+            const existing = await User_1.UserModel.findOne({ email: payload.email });
+            if (existing) {
+                const error = new Error("Email already registered");
+                error.status = 409;
+                throw error;
+            }
+            user.email = payload.email;
+        }
+        if (payload.firstName) {
+            user.firstName = payload.firstName;
+        }
+        if (payload.lastName) {
+            user.lastName = payload.lastName;
+        }
+        if (payload.phone !== undefined) {
+            user.phone = payload.phone || undefined;
+        }
+        await user.save();
+        return mapUser(user);
+    },
+    changePassword: async (userId, currentPassword, newPassword) => {
+        const user = await User_1.UserModel.findById(userId);
+        if (!user) {
+            const error = new Error("User not found");
+            error.status = 404;
+            throw error;
+        }
+        const isCurrentPasswordValid = await bcryptjs_1.default.compare(currentPassword, user.passwordHash);
+        if (!isCurrentPasswordValid) {
+            const error = new Error("Current password is incorrect");
+            error.status = 400;
+            throw error;
+        }
+        const passwordHash = await bcryptjs_1.default.hash(newPassword, 10);
+        user.passwordHash = passwordHash;
+        await user.save();
+        return { success: true };
+    },
+    getDashboardOverview: async (userId) => {
+        const shipments = await Shipment_1.ShipmentModel.find({ createdBy: userId }).lean();
+        const totalShipments = shipments.length;
+        const pendingShipments = shipments.filter((s) => s.status === "pending_approval" || s.status === "awaiting_pickup").length;
+        const completedShipments = shipments.filter((s) => s.status === "delivered").length;
+        // Get recent shipments (last 5)
+        const recentShipments = shipments
+            .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime())
+            .slice(0, 5)
+            .map((shipment) => ({
+            id: shipment._id.toString(),
+            shipmentNumber: shipment.shipmentNumber,
+            status: shipment.status,
+            createdAt: shipment.createdAt,
+        }));
+        // Get wallet balance
+        const user = await User_1.UserModel.findById(userId).lean();
+        let walletBalance = { local: 0, usd: 0 };
+        if (user?.wallet) {
+            const wallet = await Wallet_1.WalletModel.findById(user.wallet).lean();
+            if (wallet) {
+                // Convert to both currencies (simplified - you may need actual conversion rates)
+                if (wallet.currency === "USD") {
+                    walletBalance.usd = wallet.balance;
+                    walletBalance.local = wallet.balance * 3.75; // Example conversion rate
+                }
+                else {
+                    walletBalance.local = wallet.balance;
+                    walletBalance.usd = wallet.balance / 3.75; // Example conversion rate
+                }
+            }
+        }
+        return {
+            totalShipments,
+            pendingShipments,
+            completedShipments,
+            walletBalance,
+            recentShipments,
+        };
+    },
+    deleteMyAccount: async (userId, password) => {
+        const user = await User_1.UserModel.findById(userId);
+        if (!user) {
+            const error = new Error("User not found");
+            error.status = 404;
+            throw error;
+        }
+        if (user.role === roles_1.ROLES.SUPER_ADMIN) {
+            const error = new Error("Cannot delete super admin account");
+            error.status = 400;
+            throw error;
+        }
+        // Verify password
+        const isPasswordValid = await bcryptjs_1.default.compare(password, user.passwordHash);
+        if (!isPasswordValid) {
+            const error = new Error("Invalid password");
+            error.status = 400;
+            throw error;
+        }
+        // Delete wallet if exists
+        if (user.wallet) {
+            await Wallet_1.WalletModel.findByIdAndDelete(user.wallet);
+        }
+        // Delete user
+        await User_1.UserModel.findByIdAndDelete(userId);
+        return { success: true, message: "Account deleted successfully" };
     },
 };
 //# sourceMappingURL=userService.js.map

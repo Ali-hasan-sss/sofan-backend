@@ -94,5 +94,45 @@ export declare const userService: {
     deleteUser: (userId: string) => Promise<{
         id: string;
     }>;
+    updateProfile: (userId: string, payload: {
+        firstName?: string;
+        lastName?: string;
+        email?: string;
+        phone?: string;
+    }) => Promise<{
+        id: any;
+        email: any;
+        firstName: any;
+        lastName: any;
+        role: any;
+        status: any;
+        country: any;
+        shippingCode: any;
+        branch: any;
+        isActive: any;
+        createdAt: any;
+    }>;
+    changePassword: (userId: string, currentPassword: string, newPassword: string) => Promise<{
+        success: boolean;
+    }>;
+    getDashboardOverview: (userId: string) => Promise<{
+        totalShipments: number;
+        pendingShipments: number;
+        completedShipments: number;
+        walletBalance: {
+            local: number;
+            usd: number;
+        };
+        recentShipments: {
+            id: string;
+            shipmentNumber: string;
+            status: import("../models/Shipment").ShipmentStatus;
+            createdAt: Date;
+        }[];
+    }>;
+    deleteMyAccount: (userId: string, password: string) => Promise<{
+        success: boolean;
+        message: string;
+    }>;
 };
 //# sourceMappingURL=userService.d.ts.map

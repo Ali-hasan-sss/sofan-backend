@@ -7,8 +7,9 @@ const roles_1 = require("../types/roles");
 const locationController_1 = require("../controllers/locationController");
 const asyncHandler_1 = require("../middlewares/asyncHandler");
 const router = (0, express_1.Router)();
+// Public route - available to everyone
+router.get("/tree", (0, asyncHandler_1.asyncHandler)(locationController_1.LocationController.hierarchy));
 router.use((0, auth_1.authenticate)());
-router.get("/tree", (0, rbac_1.requireRoles)(roles_1.ROLES.SUPER_ADMIN, roles_1.ROLES.BRANCH_ADMIN), (0, asyncHandler_1.asyncHandler)(locationController_1.LocationController.hierarchy));
 router.post("/provinces", (0, rbac_1.requireRoles)(roles_1.ROLES.SUPER_ADMIN), (0, asyncHandler_1.asyncHandler)(locationController_1.LocationController.createProvince));
 router.patch("/provinces/:id", (0, rbac_1.requireRoles)(roles_1.ROLES.SUPER_ADMIN), (0, asyncHandler_1.asyncHandler)(locationController_1.LocationController.updateProvince));
 router.delete("/provinces/:id", (0, rbac_1.requireRoles)(roles_1.ROLES.SUPER_ADMIN), (0, asyncHandler_1.asyncHandler)(locationController_1.LocationController.deleteProvince));
