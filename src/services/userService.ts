@@ -343,7 +343,10 @@ export const userService = {
 
     const totalShipments = shipments.length;
     const pendingShipments = shipments.filter(
-      (s) => s.status === "pending_approval" || s.status === "awaiting_pickup"
+      (s) =>
+        s.status === "pending_approval" ||
+        s.status === "approved" ||
+        s.status === "courier_assigned"
     ).length;
     const completedShipments = shipments.filter(
       (s) => s.status === "delivered"

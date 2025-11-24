@@ -3,6 +3,7 @@ export interface TokenPayload {
     id: string;
     roles: string[];
     country: string;
+    branch?: string;
 }
 export declare const signAccessToken: (payload: TokenPayload) => string;
 export declare const signRefreshToken: (payload: TokenPayload) => string;

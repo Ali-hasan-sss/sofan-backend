@@ -25,8 +25,9 @@ const createApp = () => {
         next();
     });
     app.set("trust proxy", 1);
-    app.use(express_1.default.json());
-    app.use(express_1.default.urlencoded({ extended: true }));
+    // Increase body size limit to 50MB to handle base64 images
+    app.use(express_1.default.json({ limit: "50mb" }));
+    app.use(express_1.default.urlencoded({ extended: true, limit: "50mb" }));
     app.use((0, cookie_parser_1.default)());
     app.get("/health", (_req, res) => {
         res.json({ status: "ok", timestamp: new Date().toISOString() });

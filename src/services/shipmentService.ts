@@ -8,6 +8,7 @@ import {
 import { calculatePricing } from "../utils/pricing";
 import { generateShipmentNumber } from "../utils/shipmentNumber";
 import { locationService } from "./locationService";
+import { shipmentWorkflowService } from "./shipmentWorkflowService";
 import { VolumeRateModel } from "../models/VolumeRate";
 
 type ListParams = {
@@ -15,6 +16,7 @@ type ListParams = {
   branch?: string;
   status?: string;
   createdBy?: string;
+  search?: string;
 };
 
 export const shipmentService = {
@@ -26,6 +28,11 @@ export const shipmentService = {
       query.$or = [{ branchFrom: filter.branch }, { branchTo: filter.branch }];
     if (filter.status) query.status = filter.status;
     if (filters.createdBy) query.createdBy = filters.createdBy;
+
+    // Search by shipment number
+    if (filter.search) {
+      query.shipmentNumber = { $regex: filter.search.trim(), $options: "i" };
+    }
 
     const shipments = await ShipmentModel.find(query)
       .populate("branchFrom", "name code")
@@ -173,7 +180,15 @@ export const shipmentService = {
         : {}),
     };
 
-    const originBranchId = payload.branchFrom;
+    // Determine origin branch: use provided branchFrom or find from sender's district
+    let originBranchId: string | null | undefined = payload.branchFrom;
+    if (!originBranchId && payload.sender.districtId) {
+      originBranchId = await shipmentWorkflowService.findBranchForSender(
+        payload.sender.districtId,
+        payload.sender.provinceId
+      );
+    }
+
     const destinationBranchId = recipientBranchId ?? payload.branchTo;
 
     if (!originBranchId || !destinationBranchId) {
@@ -269,7 +284,7 @@ export const shipmentService = {
               currency: payload.goodsValue.currency.toUpperCase(),
             }
           : undefined,
-        branchFrom: toObjectId(originBranchId),
+        branchFrom: toObjectId(originBranchId as string),
         branchTo: toObjectId(destinationBranchId),
         createdBy,
         sender: senderAddress,
@@ -411,7 +426,15 @@ export const shipmentService = {
         : {}),
     };
 
-    const originBranchId = payload.branchFrom;
+    // Determine origin branch: use provided branchFrom or find from sender's district
+    let originBranchId: string | null | undefined = payload.branchFrom;
+    if (!originBranchId && payload.sender.districtId) {
+      originBranchId = await shipmentWorkflowService.findBranchForSender(
+        payload.sender.districtId,
+        payload.sender.provinceId
+      );
+    }
+
     const destinationBranchId = recipientBranchId ?? payload.branchTo;
 
     if (!originBranchId || !destinationBranchId) {
@@ -539,7 +562,7 @@ export const shipmentService = {
           currency: payload.goodsValue.currency.toUpperCase(),
         }
       : undefined;
-    shipment.branchFrom = toObjectId(originBranchId);
+    shipment.branchFrom = toObjectId(originBranchId as string);
     shipment.branchTo = toObjectId(destinationBranchId);
     shipment.sender = senderAddress;
     shipment.recipient = recipientAddress;
@@ -715,6 +738,7 @@ export const shipmentService = {
     });
 
     return {
+      id: shipment._id.toString(),
       shipmentNumber: shipment.shipmentNumber,
       status: shipment.status,
       country: shipment.country,

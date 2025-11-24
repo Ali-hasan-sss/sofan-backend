@@ -11,6 +11,7 @@ const shipmentSchemas_1 = require("../validators/shipmentSchemas");
 const pricing_1 = require("../utils/pricing");
 const shipmentNumber_1 = require("../utils/shipmentNumber");
 const locationService_1 = require("./locationService");
+const shipmentWorkflowService_1 = require("./shipmentWorkflowService");
 const VolumeRate_1 = require("../models/VolumeRate");
 exports.shipmentService = {
     list: async (filters) => {
@@ -24,6 +25,10 @@ exports.shipmentService = {
             query.status = filter.status;
         if (filters.createdBy)
             query.createdBy = filters.createdBy;
+        // Search by shipment number
+        if (filter.search) {
+            query.shipmentNumber = { $regex: filter.search.trim(), $options: "i" };
+        }
         const shipments = await Shipment_1.ShipmentModel.find(query)
             .populate("branchFrom", "name code")
             .populate("branchTo", "name code")
@@ -132,7 +137,11 @@ exports.shipmentService = {
                 ? { village: toObjectId(payload.recipient.villageId) }
                 : {}),
         };
-        const originBranchId = payload.branchFrom;
+        // Determine origin branch: use provided branchFrom or find from sender's district
+        let originBranchId = payload.branchFrom;
+        if (!originBranchId && payload.sender.districtId) {
+            originBranchId = await shipmentWorkflowService_1.shipmentWorkflowService.findBranchForSender(payload.sender.districtId, payload.sender.provinceId);
+        }
         const destinationBranchId = recipientBranchId ?? payload.branchTo;
         if (!originBranchId || !destinationBranchId) {
             const error = new Error("Unable to resolve source and destination branches for pricing");
@@ -322,7 +331,11 @@ exports.shipmentService = {
                 ? { village: toObjectId(payload.recipient.villageId) }
                 : {}),
         };
-        const originBranchId = payload.branchFrom;
+        // Determine origin branch: use provided branchFrom or find from sender's district
+        let originBranchId = payload.branchFrom;
+        if (!originBranchId && payload.sender.districtId) {
+            originBranchId = await shipmentWorkflowService_1.shipmentWorkflowService.findBranchForSender(payload.sender.districtId, payload.sender.provinceId);
+        }
         const destinationBranchId = recipientBranchId ?? payload.branchTo;
         if (!originBranchId || !destinationBranchId) {
             const error = new Error("Unable to resolve source and destination branches for pricing");
@@ -581,6 +594,7 @@ exports.shipmentService = {
             villageId: address.village ? address.village.toString() : undefined,
         });
         return {
+            id: shipment._id.toString(),
             shipmentNumber: shipment.shipmentNumber,
             status: shipment.status,
             country: shipment.country,

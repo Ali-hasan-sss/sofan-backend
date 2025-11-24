@@ -7,6 +7,7 @@ export interface TokenPayload {
   id: string;
   roles: string[];
   country: string;
+  branch?: string; // Branch ID for staff members
 }
 
 const normalizeExpiresIn = (value: string): number | StringValue => {

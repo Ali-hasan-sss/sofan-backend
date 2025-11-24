@@ -4,6 +4,7 @@ type ListParams = {
     branch?: string;
     status?: string;
     createdBy?: string;
+    search?: string;
 };
 export declare const shipmentService: {
     list: (filters: ListParams) => Promise<{
@@ -129,6 +130,7 @@ export declare const shipmentService: {
         updatedAt: Date;
     }>;
     getByNumber: (shipmentNumber: string) => Promise<{
+        id: string;
         shipmentNumber: string;
         status: import("../models/Shipment").ShipmentStatus;
         country: string;

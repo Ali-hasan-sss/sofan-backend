@@ -270,7 +270,9 @@ exports.userService = {
     getDashboardOverview: async (userId) => {
         const shipments = await Shipment_1.ShipmentModel.find({ createdBy: userId }).lean();
         const totalShipments = shipments.length;
-        const pendingShipments = shipments.filter((s) => s.status === "pending_approval" || s.status === "awaiting_pickup").length;
+        const pendingShipments = shipments.filter((s) => s.status === "pending_approval" ||
+            s.status === "approved" ||
+            s.status === "courier_assigned").length;
         const completedShipments = shipments.filter((s) => s.status === "delivered").length;
         // Get recent shipments (last 5)
         const recentShipments = shipments

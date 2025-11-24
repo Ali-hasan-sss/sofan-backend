@@ -3,11 +3,17 @@ import { Dimensions, ShipmentType, Money } from "../types";
 
 export type ShipmentStatus =
   | "draft"
-  | "pending_approval"
-  | "awaiting_pickup"
-  | "in_transit"
-  | "delivered"
-  | "cancelled";
+  | "pending_approval" // الطلب معلق - يظهر للفرع
+  | "approved" // تم قبول الطلب من الفرع
+  | "courier_assigned" // تم تعيين مندوب
+  | "picked_up" // تم الاستلام من قبل المندوب
+  | "at_origin_branch" // في الفرع المرسل
+  | "in_transit" // في الطريق بين الفروع
+  | "at_transit_branch" // في فرع عبور
+  | "at_destination_branch" // في الفرع المستلم
+  | "out_for_delivery" // في الطريق للتسليم
+  | "delivered" // تم التسليم
+  | "cancelled"; // ملغي
 
 export interface PackageDetails extends Dimensions {
   volumetricWeight: number;
@@ -60,6 +66,17 @@ export interface ShipmentDocument extends Document {
   walletTransaction?: Types.ObjectId;
   status: ShipmentStatus;
   approvals: { approvedBy: Types.ObjectId; approvedAt: Date }[];
+  currentBranch?: Types.ObjectId; // الفرع الحالي للشحنة
+  assignedCourier?: Types.ObjectId; // المندوب المعين
+  deliveryProof?: {
+    identityFrontImage?: string; // Base64 image of ID front
+    identityBackImage?: string; // Base64 image of ID back
+    signature?: string; // Base64 signature image
+    deliveredAt?: Date;
+    deliveredBy?: Types.ObjectId; // Employee/Courier who delivered
+    codCollected?: number; // Actual COD amount collected
+    codCurrency?: string;
+  };
   createdAt: Date;
   updatedAt: Date;
 }
@@ -145,18 +162,35 @@ const ShipmentSchema = new Schema<ShipmentDocument>(
     codAmount: { type: Number },
     codCurrency: { type: String },
     walletTransaction: { type: Schema.Types.ObjectId, ref: "Wallet" },
+    deliveryProof: {
+      identityFrontImage: { type: String },
+      identityBackImage: { type: String },
+      signature: { type: String },
+      deliveredAt: { type: Date },
+      deliveredBy: { type: Schema.Types.ObjectId, ref: "User" },
+      codCollected: { type: Number },
+      codCurrency: { type: String },
+    },
     status: {
       type: String,
       enum: [
         "draft",
         "pending_approval",
-        "awaiting_pickup",
+        "approved",
+        "courier_assigned",
+        "picked_up",
+        "at_origin_branch",
         "in_transit",
+        "at_transit_branch",
+        "at_destination_branch",
+        "out_for_delivery",
         "delivered",
         "cancelled",
       ],
       default: "pending_approval",
     },
+    currentBranch: { type: Schema.Types.ObjectId, ref: "Branch", index: true },
+    assignedCourier: { type: Schema.Types.ObjectId, ref: "Courier" },
     approvals: {
       type: [
         {

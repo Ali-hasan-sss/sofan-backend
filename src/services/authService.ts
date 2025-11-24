@@ -229,6 +229,7 @@ export const authService = {
       id: user.id.toString(),
       roles: [user.role],
       country: user.country,
+      branch: user.branch?.toString(),
     };
 
     const accessToken = signAccessToken(tokenPayload);
@@ -256,6 +257,7 @@ export const authService = {
       id: decoded.id ?? decoded.userId,
       roles: decoded.roles,
       country: decoded.country,
+      branch: decoded.branch,
     };
     const accessToken = signAccessToken(tokenPayload);
     const refreshToken = signRefreshToken(tokenPayload);

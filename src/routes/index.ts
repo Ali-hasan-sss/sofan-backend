@@ -12,6 +12,7 @@ import locationsRouter from "./locations";
 import staffRouter from "./staff";
 import settingsRouter from "./settings";
 import countriesRouter from "./countries";
+import shipmentWorkflowRouter from "./shipmentWorkflow";
 
 const router = Router();
 
@@ -28,5 +29,6 @@ router.use("/locations", locationsRouter);
 router.use("/staff", staffRouter);
 router.use("/settings", settingsRouter);
 router.use("/countries", countriesRouter);
+router.use("/shipment-workflow", shipmentWorkflowRouter);
 
 export default router;

@@ -15,6 +15,7 @@ export const ShipmentController = {
       branch: req.query.branch as string | undefined,
       status: req.query.status as string | undefined,
       createdBy: isRegularUser ? req.user?.id : undefined,
+      search: req.query.search as string | undefined,
     });
     res.json(shipments);
   },
@@ -63,6 +64,13 @@ export const ShipmentController = {
 
   trackPublic: async (req: Request, res: Response) => {
     const shipment = await shipmentService.getByNumber(req.params.number);
-    res.json(shipment);
+    // Get tracking history
+    const { shipmentWorkflowService } = await import(
+      "../services/shipmentWorkflowService"
+    );
+    const tracking = await shipmentWorkflowService.getShipmentTracking(
+      shipment.id
+    );
+    res.json({ ...shipment, tracking });
   },
 };

@@ -23,12 +23,7 @@ const packageSchema = zod_1.z.object({
     declaredValue: moneySchema,
     goodsType: zod_1.z.string().min(1),
 });
-const paymentMethodEnum = zod_1.z.enum([
-    "prepaid",
-    "cod",
-    "contract",
-    "wallet",
-]);
+const paymentMethodEnum = zod_1.z.enum(["prepaid", "cod", "contract", "wallet"]);
 exports.shipmentCreateSchema = zod_1.z.object({
     type: zod_1.z.enum([
         "door_to_door",
@@ -57,11 +52,18 @@ exports.shipmentFilterSchema = zod_1.z.object({
         .enum([
         "draft",
         "pending_approval",
-        "awaiting_pickup",
+        "approved",
+        "courier_assigned",
+        "picked_up",
+        "at_origin_branch",
         "in_transit",
+        "at_transit_branch",
+        "at_destination_branch",
+        "out_for_delivery",
         "delivered",
         "cancelled",
     ])
         .optional(),
+    search: zod_1.z.string().optional(),
 });
 //# sourceMappingURL=shipmentSchemas.js.map

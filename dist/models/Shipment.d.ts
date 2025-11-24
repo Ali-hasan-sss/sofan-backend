@@ -1,6 +1,6 @@
 import { Document, Types } from "mongoose";
 import { Dimensions, ShipmentType, Money } from "../types";
-export type ShipmentStatus = "draft" | "pending_approval" | "awaiting_pickup" | "in_transit" | "delivered" | "cancelled";
+export type ShipmentStatus = "draft" | "pending_approval" | "approved" | "courier_assigned" | "picked_up" | "at_origin_branch" | "in_transit" | "at_transit_branch" | "at_destination_branch" | "out_for_delivery" | "delivered" | "cancelled";
 export interface PackageDetails extends Dimensions {
     volumetricWeight: number;
     quantity: number;
@@ -53,6 +53,17 @@ export interface ShipmentDocument extends Document {
         approvedBy: Types.ObjectId;
         approvedAt: Date;
     }[];
+    currentBranch?: Types.ObjectId;
+    assignedCourier?: Types.ObjectId;
+    deliveryProof?: {
+        identityFrontImage?: string;
+        identityBackImage?: string;
+        signature?: string;
+        deliveredAt?: Date;
+        deliveredBy?: Types.ObjectId;
+        codCollected?: number;
+        codCurrency?: string;
+    };
     createdAt: Date;
     updatedAt: Date;
 }

@@ -24,12 +24,7 @@ const packageSchema = z.object({
   goodsType: z.string().min(1),
 });
 
-const paymentMethodEnum = z.enum([
-  "prepaid",
-  "cod",
-  "contract",
-  "wallet",
-]);
+const paymentMethodEnum = z.enum(["prepaid", "cod", "contract", "wallet"]);
 
 export const shipmentCreateSchema = z.object({
   type: z.enum([
@@ -60,10 +55,17 @@ export const shipmentFilterSchema = z.object({
     .enum([
       "draft",
       "pending_approval",
-      "awaiting_pickup",
+      "approved",
+      "courier_assigned",
+      "picked_up",
+      "at_origin_branch",
       "in_transit",
+      "at_transit_branch",
+      "at_destination_branch",
+      "out_for_delivery",
       "delivered",
       "cancelled",
     ])
     .optional(),
+  search: z.string().optional(),
 });

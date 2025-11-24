@@ -57,12 +57,19 @@ export declare const shipmentFilterSchema: z.ZodObject<{
     country: z.ZodOptional<z.ZodString>;
     branch: z.ZodOptional<z.ZodString>;
     status: z.ZodOptional<z.ZodEnum<{
+        approved: "approved";
         draft: "draft";
         pending_approval: "pending_approval";
-        awaiting_pickup: "awaiting_pickup";
+        courier_assigned: "courier_assigned";
+        picked_up: "picked_up";
+        at_origin_branch: "at_origin_branch";
         in_transit: "in_transit";
+        at_transit_branch: "at_transit_branch";
+        at_destination_branch: "at_destination_branch";
+        out_for_delivery: "out_for_delivery";
         delivered: "delivered";
         cancelled: "cancelled";
     }>>;
+    search: z.ZodOptional<z.ZodString>;
 }, z.core.$strip>;
 //# sourceMappingURL=shipmentSchemas.d.ts.map

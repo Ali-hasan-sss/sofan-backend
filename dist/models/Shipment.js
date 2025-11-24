@@ -66,18 +66,35 @@ const ShipmentSchema = new mongoose_1.Schema({
     codAmount: { type: Number },
     codCurrency: { type: String },
     walletTransaction: { type: mongoose_1.Schema.Types.ObjectId, ref: "Wallet" },
+    deliveryProof: {
+        identityFrontImage: { type: String },
+        identityBackImage: { type: String },
+        signature: { type: String },
+        deliveredAt: { type: Date },
+        deliveredBy: { type: mongoose_1.Schema.Types.ObjectId, ref: "User" },
+        codCollected: { type: Number },
+        codCurrency: { type: String },
+    },
     status: {
         type: String,
         enum: [
             "draft",
             "pending_approval",
-            "awaiting_pickup",
+            "approved",
+            "courier_assigned",
+            "picked_up",
+            "at_origin_branch",
             "in_transit",
+            "at_transit_branch",
+            "at_destination_branch",
+            "out_for_delivery",
             "delivered",
             "cancelled",
         ],
         default: "pending_approval",
     },
+    currentBranch: { type: mongoose_1.Schema.Types.ObjectId, ref: "Branch", index: true },
+    assignedCourier: { type: mongoose_1.Schema.Types.ObjectId, ref: "Courier" },
     approvals: {
         type: [
             {
